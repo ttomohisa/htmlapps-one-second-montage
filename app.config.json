@@ -1,0 +1,26 @@
+{
+  "$schema": "./schemas/app-config.schema.json",
+  "name": "One Second Montage",
+  "nameJa": "1秒モンタージュ",
+  "slug": "one-second-montage",
+  "version": "1.0.0",
+  "description": "Turn photos and videos into an MP4 montage with one second per item, entirely in the browser.",
+  "descriptionJa": "写真や動画を1素材1秒でつないだMP4動画を、ブラウザー内だけで作成します。",
+  "defaultLanguage": "auto",
+  "repository": {
+    "owner": "ttomohisa",
+    "name": "htmlapps-one-second-montage"
+  },
+  "build": {
+    "output": "dist/index.html",
+    "blockRuntimeNetwork": true,
+    "selfExtract": {
+      "enabled": true,
+      "output": "dist/index.self-extract.html"
+    },
+    "sizeBudget": {
+      "readableWarningMb": 25,
+      "selfExtractWarningMb": 12
+    }
+  }
+}

@@ -3,9 +3,9 @@
   "name": "One Second Montage",
   "nameJa": "1秒モンタージュ",
   "slug": "one-second-montage",
-  "version": "1.2.0",
-  "description": "Turn photos and videos into an MP4 montage with one second per item, entirely in the browser.",
-  "descriptionJa": "写真や動画を1素材1秒でつないだMP4動画を、ブラウザー内だけで作成します。",
+  "version": "1.3.0",
+  "description": "Turn photos and videos into a one-second-per-item MP4 montage with optional looping music, entirely in the browser.",
+  "descriptionJa": "写真や動画を1素材1秒でつなぎ、必要ならBGMも加えたMP4動画をブラウザー内だけで作成します。",
   "defaultLanguage": "auto",
   "repository": {
     "owner": "ttomohisa",

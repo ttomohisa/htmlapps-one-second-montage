@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 1.3.0 - 2026-09-02
+
+- Add optional background music with two lightweight original built-in loops: `Daylight` and `Warm Pulse`.
+- Add custom music-file input, looping to the full montage duration, preview, and volume adjustment.
+- Keep source-video audio excluded so the finished MP4 contains only the selected BGM when music is enabled.
+- Add optional one-second capture-year divider cards based on the current item order.
+- Include divider seconds in duration/progress/result summaries and keep music/year settings in stale-output detection.
+- Preserve fully local processing: built-in music is synthesized in-app and custom audio never leaves the browser.
+- Refine the built-in music choice by replacing `Soft Steps` with the calmer, more spacious `Daylight` loop and use a square stop icon while previewing music.
+- Align fallback onboarding/mobile-reorder copy with the v1.3 behavior and localize the hidden background-music file input label for accessibility.
+
 ## 1.2.0 - 2026-09-02
 
 - Prefetch at most the next source while the current one-second segment is rendering, reducing transition latency without allowing unbounded source decoding.

@@ -13,3 +13,7 @@ When adding a package to `dependencies.json`:
 5. Commit the regenerated `dist/dependency-manifest.json` only if the repository policy chooses to track generated artifacts.
 
 Do not assume that a package being available from npm makes it compatible with MIT redistribution.
+
+## Built-in music in One Second Montage
+
+`Soft Steps` and `Warm Pulse` are lightweight original loops synthesized by code in this repository. They do not include or load third-party audio recordings or music assets.

@@ -1,4 +1,25 @@
-# Changelog
+# CHANGELOG
+
+## 1.2.0 - 2026-09-02
+
+- Prefetch at most the next source while the current one-second segment is rendering, reducing transition latency without allowing unbounded source decoding.
+- Keep each video segment close to its intended one-second output duration by counting playback-start latency inside the one-second window instead of adding it afterward.
+- Add automatic **recommended one-second** selection for videos using a lightweight, fully local analysis of brightness, visual change, contrast, and edge detail.
+- Fall back to the middle second when the analysis cannot identify a clearly better candidate or when a video is too short for useful sampling.
+- Keep manual clip adjustment unchanged and make **Reset** return to the recommended section when one was selected automatically.
+- Show **recommended 1 sec / おすすめ1秒** in video cards, while fallback videos continue to show **middle 1 sec / 中央1秒**.
+- Treat highlight analysis as best-effort: analysis errors do not reject an otherwise readable video.
+- Update Japanese/English help and README for the new local highlight-selection behavior.
+- Redesign the empty-state three-step guide to match the clearer Photo Re-Enactor-style flow cards.
+- Make phone reordering obvious and directly usable: show a touch drag handle on item cards, keep the dedicated Reorder dialog, and lay out the mobile sorting controls at full width.
+
+## 1.1.0 - 2026-09-01
+
+- Add a blurred-background option for **Show whole item / Fit** output so portrait and square sources can fill unused space more naturally, with tuned blur and a slightly darker backdrop to keep the foreground clear.
+- Keep the existing **black bars** option and show the background selector only when **Show whole item** is selected.
+- Include the chosen background style in the output summary, result metadata, and stale-result detection so recreating reflects the exact rendering settings.
+- Update the Japanese/English help and README to explain the new blurred-background output choice.
+- Refresh Japanese and English screenshots with the blurred-background setting visible.
 
 ## 1.0.0 - 2026-09-01
 

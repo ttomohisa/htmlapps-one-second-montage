@@ -1,4 +1,4 @@
-# APP_SPEC — One Second Montage v1.0.0
+# APP_SPEC — One Second Montage v1.2.0
 
 ## Goal
 
@@ -6,7 +6,7 @@ JPEG / PNG / WebP画像と動画をまとめて読み込み、**1素材1秒**で
 
 動画編集ソフト化はしない。並び順、動画の使う1秒、仕上がりの形と表示方法だけを必要に応じて変更できる。
 
-## v1.0 scope
+## v1.2 scope
 
 - 最新 htmlapps-template v1.2.0 構成に準拠
 - JPEG / PNG / WebP画像
@@ -17,11 +17,12 @@ JPEG / PNG / WebP画像と動画をまとめて読み込み、**1素材1秒**で
 - サムネイルグリッド
 - 素材の個別削除と短時間のUndo
 - 1素材 = 1秒
-- 動画は中央1秒を初期使用し、必要な動画だけ開始位置を変更可能
+- 動画は軽量なローカル解析で「見どころ1秒」を自動選択し、判定が弱い場合は中央1秒へフォールバック。必要な動画だけ開始位置を変更可能
 - 「動画だけ確認」
 - 追加順 / 撮影日時順 / ファイル名順 / 手動並べ替え
 - 横16:9 / 縦9:16 / 正方形1:1
 - 素材全体を表示 / 画面いっぱい
+- Fit時の 黒の余白 / ぼかし背景
 - 標準 / 高画質
 - 音声なしMP4生成
 - 生成進捗
@@ -38,7 +39,7 @@ JPEG / PNG / WebP画像と動画をまとめて読み込み、**1素材1秒**で
 - The grid keeps reduced thumbnails rather than full-resolution image decodes.
 - Import work yields between small batches so the UI remains responsive.
 - Capture-date parsing uses an embedded Blob Worker when available and falls back safely when unavailable.
-- Export opens and releases one source item at a time.
+- Export keeps only the current item plus at most one prefetched next item, releasing each source as soon as it is no longer needed.
 - Import and export can be cancelled without clearing already imported items.
 - Unsupported and unreadable files remain outside the successful item list and are shown separately.
 
@@ -52,6 +53,12 @@ JPEG / PNG / WebP画像と動画をまとめて読み込み、**1素材1秒**で
 - 完成後はプレビュー / 保存に加え、「素材を確認」で編集へ戻れ、「動画を作り直す」で置き換え確認を行う。
 - 完成後に素材・順番・動画位置・仕上がりを変更しても既存MP4は保持し、変更前の動画であることを明示する。
 
+
+### Empty-state guidance
+
+- 初期画面では、Photo Re-Enactorと同系統の3カード構成で `写真・動画を選ぶ → 1秒ずつ確認する → 動画を作って保存` の流れを先に示す。
+- 3カードの下には `見どころ1秒 · 並べ替え · ぼかし背景 · 横 / 縦 / 正方形` の主要機能だけを簡潔に示す。
+- 素材追加後はこの概要を非表示にし、編集・生成UIへ集中させる。
 
 ### Language / help / accessibility
 
@@ -69,8 +76,8 @@ JPEG / PNG / WebP画像と動画をまとめて読み込み、**1素材1秒**で
 
 1. 写真・動画をまとめて追加する。
 2. 必要なら並び順を変更する。
-3. 必要な動画だけ「使う1秒」を変更する。
-4. 必要なら仕上がりの**動画の形 / 素材の表示 / 画質**を変更する。
+3. 自動選択された「おすすめ1秒」を確認し、必要な動画だけ「使う1秒」を変更する。
+4. 必要なら仕上がりの**動画の形 / 素材の表示 / Fit時の背景 / 画質**を変更する。
 5. 「動画を作る」を押す。
 6. 完成動画をプレビューする。
 7. 必要ならファイル名を変更してMP4を保存する。
@@ -86,7 +93,7 @@ JPEG / PNG / WebP画像と動画をまとめて読み込み、**1素材1秒**で
 
 ### Item display
 
-- `fit`（初期値）: 素材全体が見えるように中央配置し、余った部分は黒背景にする。
+- `fit`（初期値）: 素材全体が見えるように中央配置する。余白は `solid`（黒の余白）または `blur`（ぼかし背景）を選べる。
 - `fill`: 出力画面を埋めるまで拡大し、はみ出す部分を中央基準でトリミングする。
 
 v1.0では素材ごとの焦点位置変更は行わない。
@@ -106,22 +113,25 @@ v1.0では素材ごとの焦点位置変更は行わない。
 - 撮影日時順はJPEG EXIF、MP4 / MOV / M4V creation metadata、`File.lastModified`の順で利用する。
 - ファイル名順は数字を考慮した自然順。
 - PCでは一覧上のハンドルで手動並べ替え。
-- スマートフォンでは専用の並べ替え画面で上下移動する。
+- スマートフォンではカード右下のタッチ用ハンドルで直接並べ替えでき、専用の並べ替え画面の上下移動も利用できる。
 - 動画だけフィルター中は全体順序を誤って変えないよう、一覧上のドラッグを無効化する。
 
 ## Video rule
 
-- `duration >= 1`: 初期値は `clipStart = (duration - 1) / 2`。
+- `duration < 1`: 動画全体を使い、最後のフレームを保持して1秒にする。
+- `1 <= duration < 2.2`: 中央1秒を初期値とする。
+- `duration >= 2.2`: 複数の1秒候補を少数サンプリングし、明るさ・フレーム間変化・コントラスト / エッジ量をもとに見どころ候補を選ぶ。
+- 候補が中央1秒より十分に良いと判定できない場合は中央1秒へフォールバックする。
+- 自動選択は内容理解AIではなく、完全ローカルの軽量ヒューリスティックとする。
 - 使用区間は常に `clipStart` から1秒。
 - 開始位置だけ変更でき、終了位置は独立編集しない。
-- `duration < 1`: 動画全体を使い、最後のフレームを保持して1秒にする。
 - 素材動画の音声は使用しない。
 
 ## Rendering
 
 - Canvas + `captureStream(30)` で出力フレームを生成する。
 - 1素材につき1秒。
-- Fit / Fillは画像・動画の両方に同じ規則を適用する。
+- Fit / Fillは画像・動画の両方に同じ規則を適用する。Fitでは黒の余白またはぼかし背景を選べる。
 - 出力設定はサムネイル自体には適用せず、完成動画生成時に適用する。
 - 出力は映像トラックのみのMP4。
 
@@ -159,4 +169,4 @@ MP4生成には `MediaRecorder` + `canvas.captureStream()` とブラウザーの
 
 ## Release status
 
-v1.0.0 release-ready. The full regression completed successfully for mixed media, ordering, clip selection, item removal/undo, output presets, cancellation, failure states, Japanese/English UI, desktop/mobile layouts, standalone/self-extract, CSP, and runtime network behavior.
+v1.2.0 release-ready. Lightweight local highlight selection, middle-second fallback, manual reset/adjustment, blurred-background compatibility, Japanese/English UI, mobile layout, standalone/self-extract integrity, and MP4 output have been verified.

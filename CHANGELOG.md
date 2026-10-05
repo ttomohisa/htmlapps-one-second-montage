@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## Unreleased
+
+- Fix dependency maintenance reports for empty or null dependency lists under PowerShell strict mode.
+- Run offline report regressions (empty, disabled, current, and update-policy cases) from the normal repository check.
+
 ## 1.3.0 - 2026-09-02
 
 - Add optional background music with two lightweight original built-in loops: `Daylight` and `Warm Pulse`.

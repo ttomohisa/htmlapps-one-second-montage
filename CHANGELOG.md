@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add Japanese/English **Reverse all items** in Reorder, preserving clip choices, item metadata, the finished MP4, and the edited output filename.
+- Prevent remove Undo from changing the item list during import or rendering, which could previously produce an MP4 whose reported count and freshness did not match its contents. Keep unexpired Undo available after completion/cancellation without extending its five-second window.
+- Add offline Node.js behavior tests for ordering, Undo timing, gated rendering, and all four source/release representations to repository validation.
+
 - Fix dependency maintenance reports for empty or null dependency lists under PowerShell strict mode.
 - Run offline report regressions (empty, disabled, current, and update-policy cases) from the normal repository check.
 

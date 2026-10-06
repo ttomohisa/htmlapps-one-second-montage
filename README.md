@@ -20,7 +20,7 @@ GitHub Pages delivers the initial HTML. After it loads, file reading, thumbnails
 
 - **One item, one second** — Every photo contributes one second. For each video, a lightweight local analysis checks brightness, visual change, and image detail to choose a promising one-second highlight; uncertain cases fall back to the middle second.
 - **Photos and videos in one batch** — Mix JPEG, PNG, WebP, MP4, and WebM files, then review them in one thumbnail grid. MOV / M4V also work when the browser can decode them.
-- **Edit only what needs attention** — Reorder items, remove/undo items, use **Check videos only**, and move a video's one-second window without opening a full timeline editor.
+- **Edit only what needs attention** — Reorder items, reverse the whole sequence, remove/undo items, use **Check videos only**, and move a video's one-second window without opening a full timeline editor.
 - **Simple output choices** — Export landscape 16:9, portrait 9:16, or square 1:1; choose whole-item Fit or centered Fill; when using Fit, choose black bars or a blurred background; and use standard or high-quality resolution presets.
 - **Optional looping music** — Choose one of two lightweight built-in original loops, or select your own audio file. The selected track repeats to the end of the montage; source-video audio is not used.
 - **Automatic year dividers** — Optionally insert a simple one-second `2024`, `2025`, … card for the first capture year and whenever the year changes in the current item order.
@@ -49,13 +49,15 @@ The file is self-contained and does not require a local web server.
 
 The current app has no bundled third-party runtime libraries. Python, Node.js, and a local server are not required for the build; the template uses Windows PowerShell and built-in tooling.
 
+Repository validation (`scripts/check-repository.ps1`) additionally requires Node.js 22 or newer for offline behavior tests across the source and all release variants.
+
 ## Usage
 
 1. Add photos and videos together with the file picker or drag and drop.
 2. Check the item count and finished duration. Each item contributes one second; enabled year dividers add one second each.
-3. Choose **Added**, **Date taken**, or **Filename**, or use **Reorder** for a custom sequence.
+3. Choose **Added**, **Date taken**, or **Filename**, or use **Reorder** for a custom sequence. **Reverse all items** reverses the current full order, including photos hidden by **Check videos only**, and switches to Manual.
 4. The app marks automatically selected highlights as **recommended 1 sec**. Select a video when you want to change its one-second window, and use **Play 1 second** to preview only the selected part.
-5. Remove unwanted items from their cards. **Undo** is available briefly after removal.
+5. Remove unwanted items from their cards. **Undo** is available for 5 seconds after removal. It is disabled while importing or creating a video and becomes available again if that time has not expired when processing finishes or is cancelled.
 6. If needed, choose the video shape, item display mode, background style for Fit, and quality preset.
 7. Optionally choose a built-in BGM or your own music, adjust its volume, and enable one-second capture-year dividers.
 8. Select **Create video** and wait for the montage to render.

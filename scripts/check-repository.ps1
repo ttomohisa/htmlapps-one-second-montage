@@ -36,6 +36,8 @@ $required = @(
   "scripts\dependency-tools.ps1",
   "scripts\check-dependency-updates.ps1",
   "scripts\test-dependency-updates.ps1",
+  "scripts\test-editing.mjs",
+  "tests\editing.test.mjs",
   "scripts\sync-dependency-lock.ps1",
   "scripts\update-dependency.ps1",
   "scripts\verify-standalone.ps1",
@@ -206,5 +208,10 @@ if ([string]::IsNullOrWhiteSpace([string]$app.version)) { throw "app.config.json
 $buildArguments = @{}
 if ($ForceDownload) { $buildArguments.ForceDownload = $true }
 & (Join-Path $Root "build-standalone.ps1") @buildArguments
+
+# Exercise source, tracked standalone, readable build, and decoded self-extract output.
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw "Node.js 22 or newer is required for offline editing regression tests." }
+& node (Join-Path $Root "scripts\test-editing.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Editing regression tests failed." }
 
 Write-Host "[OK] Repository check passed." -ForegroundColor Green

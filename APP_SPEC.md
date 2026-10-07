@@ -1,4 +1,4 @@
-# APP_SPEC — One Second Montage v1.3.0
+# APP_SPEC — One Second Montage v1.3.1
 
 ## Goal
 
@@ -196,3 +196,8 @@ MP4生成には `MediaRecorder` + `canvas.captureStream()` とブラウザーの
 ## Release status
 
 v1.3.0 implementation complete. Built-in/custom looping music, year dividers, duration accounting, audio/video MP4 output, local-only processing, and the existing v1.2 feature set are covered by regression checks.
+
+## Header normalization (1.3.1)
+
+- The language button shows EN in Japanese and JA in English. Its title and accessible name describe the destination in the current UI language.
+- Help retains its localized title and accessible name; the header version is v1.3.1.

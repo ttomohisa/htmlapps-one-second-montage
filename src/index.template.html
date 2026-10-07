@@ -79,8 +79,8 @@
 <body>
 <a class="skip-link" href="#mainContent" data-i18n="skipToMain">メイン操作へ移動</a>
 <header class="app-header"><div class="header-inner">
-  <div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><rect x="9" y="14" width="46" height="36" rx="6" stroke="currentColor" stroke-width="3.5"/><path d="M15 19h5M27 19h5M39 19h5M15 45h5M27 45h5M39 45h5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><text x="32" y="38" fill="currentColor" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="800" text-anchor="middle">1s</text></svg></div><div class="brand-copy"><p class="brand-name"><span id="brandName">1秒モンタージュ</span><span class="version-badge" id="versionBadge">v1.3.0</span></p><p class="brand-meta" data-i18n="brandMeta">写真や動画を1素材1秒でつなぐ</p></div></div>
-  <div class="header-actions"><button class="language-button" id="languageButton" type="button" aria-label="Switch language">EN</button><button class="icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.35 2.35 0 1 1 3.72 1.9c-.92.67-1.52 1.12-1.52 2.1"/><path d="M12 17h.01"/></svg></button></div>
+  <div class="brand"><div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none"><rect x="9" y="14" width="46" height="36" rx="6" stroke="currentColor" stroke-width="3.5"/><path d="M15 19h5M27 19h5M39 19h5M15 45h5M27 45h5M39 45h5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><text x="32" y="38" fill="currentColor" font-family="Arial,Helvetica,sans-serif" font-size="18" font-weight="800" text-anchor="middle">1s</text></svg></div><div class="brand-copy"><p class="brand-name"><span id="brandName">1秒モンタージュ</span><span class="version-badge" id="versionBadge">v1.3.1</span></p><p class="brand-meta" data-i18n="brandMeta">写真や動画を1素材1秒でつなぐ</p></div></div>
+  <div class="header-actions"><button class="language-button" id="languageButton" type="button" title="英語に切り替え" aria-label="英語に切り替え">EN</button><button class="icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.35 2.35 0 1 1 3.72 1.9c-.92.67-1.52 1.12-1.52 2.1"/><path d="M12 17h.01"/></svg></button></div>
 </div></header>
 <main class="main" id="mainContent" tabindex="-1">
   <section class="page-intro" aria-labelledby="heroTitle"><div><h1 id="heroTitle" data-i18n="introTitle">写真や動画を、1つ1秒でつなぎます。</h1><p data-i18n="lead">写真や動画をまとめて選ぶだけ。各素材を1秒ずつ使ったMP4を作ります。BGMも必要なときだけ追加できます。</p></div><div class="local-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg><span data-i18n="localBadge">完全ローカル処理</span></div></section>
@@ -314,8 +314,8 @@
         document.querySelectorAll('[data-i18n]').forEach(el=>el.textContent=t(el.dataset.i18n));
         document.querySelectorAll('[data-i18n-title]').forEach(el=>el.title=t(el.dataset.i18nTitle));
         document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>el.setAttribute('aria-label',t(el.dataset.i18nAriaLabel)));
-        $('#languageButton').textContent=state.language==='ja'?'EN':'日本語';
-        $('#languageButton').setAttribute('aria-label',state.language==='ja'?'英語に切り替え':'Switch to Japanese');
+        $('#languageButton').textContent=state.language==='ja'?'EN':'JA';
+        $('#languageButton').title=state.language==='ja'?'英語に切り替え':'Switch to Japanese'; $('#languageButton').setAttribute('aria-label',$('#languageButton').title);
         document.title=state.language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
         $('#brandName').textContent=state.language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;
         $('#footerName').textContent=state.language==='ja'?APP_CONFIG.nameJa:APP_CONFIG.name;

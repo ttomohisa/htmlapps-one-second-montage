@@ -214,4 +214,7 @@ if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw "Node.js 22 o
 & node (Join-Path $Root "scripts\test-editing.mjs")
 if ($LASTEXITCODE -ne 0) { throw "Editing regression tests failed." }
 
+
+& node (Join-Path $Root "tests\header-normalization.test.mjs")
+if ($LASTEXITCODE -ne 0) { throw "Header normalization regression failed." }
 Write-Host "[OK] Repository check passed." -ForegroundColor Green

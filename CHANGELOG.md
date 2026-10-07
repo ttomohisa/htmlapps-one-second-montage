@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 1.3.1 - 2026-10-07
+
+- Normalize the header language switch to EN / JA with localized destination tooltips and accessible names.
+- Keep Help labels localized and synchronize the three-part app version without changing local-processing behavior.
+
 ## Unreleased
 
 - Add Japanese/English **Reverse all items** in Reorder, preserving clip choices, item metadata, the finished MP4, and the edited output filename.

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 1.3.2 - 2026-10-10
+
+- Keep modal background pages still and the Recreate header/actions reachable in short and narrow windows.
+- Wrap the narrow app title/version without clipping header controls.
+- Preserve keyboard focus after Reorder, Remove and Undo; ignore child keyboard clicks in Reorder backdrop detection.
+- Add actual-handler regression checks across source and all generated HTML variants.
+
 ## 1.3.1 - 2026-10-07
 
 - Normalize the header language switch to EN / JA with localized destination tooltips and accessible names.

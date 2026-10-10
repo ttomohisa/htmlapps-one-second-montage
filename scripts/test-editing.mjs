@@ -19,7 +19,7 @@ try {
   fs.writeFileSync(restored, decoded);
   for (const input of ['src/index.template.html', 'one-second-montage.html', 'dist/index.html', restored]) {
     console.log(`\n[Editing regression] ${input === restored ? 'decoded self-extract HTML' : input}`);
-    const result = spawnSync(process.execPath, ['--test', path.join(root, 'tests/editing.test.mjs')], { stdio: 'inherit', env: { ...process.env, MONTAGE_HTML: path.resolve(root, input) } });
+    const result = spawnSync(process.execPath, ['--test', path.join(root, 'tests/editing.test.mjs'), path.join(root, 'tests/layout-focus.test.mjs')], { stdio: 'inherit', env: { ...process.env, MONTAGE_HTML: path.resolve(root, input) } });
     if (result.error) throw result.error;
     if (result.status !== 0) process.exitCode = 1;
   }

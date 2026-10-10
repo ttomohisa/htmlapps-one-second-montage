@@ -1,4 +1,4 @@
-# APP_SPEC — One Second Montage v1.3.1
+# APP_SPEC — One Second Montage v1.3.2
 
 ## Goal
 
@@ -201,3 +201,10 @@ v1.3.0 implementation complete. Built-in/custom looping music, year dividers, du
 
 - The language button shows EN in Japanese and JA in English. Its title and accessible name describe the destination in the current UI language.
 - Help retains its localized title and accessible name; the header version is v1.3.1.
+
+## Responsive dialog and keyboard audit (1.3.2)
+
+- Open modal dialogs lock the background page. Recreate keeps its header and actions visible while its body scrolls; existing Help, Clip and Reorder shell geometry is preserved.
+- At narrow widths the app title and version wrap without clipping the language and Help controls. The decorative local-processing shield is unchanged.
+- Keyboard activation of Reorder controls never counts as a backdrop click. A moved row retains its corresponding enabled direction control (the other direction at a boundary). Remove and Undo restore a logical visible item action or an existing Add control, without activating it, changing the active filter, extending Undo, or taking focus from a newer modal/editor.
+- Clip and Recreate continue to use their explicit Close/Cancel/Escape actions rather than backdrop dismissal.

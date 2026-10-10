@@ -25,7 +25,7 @@ function harness({ items = [makeItem(0), makeItem(1, 2025), makeItem(2)], yearDi
   let now = 0, timerId = 0, first = true;
   const started = deferred(), resume = deferred(), importStarted = deferred(), importResume = deferred();
   function element(id) {
-    if (!elements.has(id)) elements.set(id, { id, disabled: false, hidden: false, value: '', children: [], attrs: {}, listeners: {}, style: { removeProperty() {} }, classList: { add() {}, remove() {}, toggle() {} },
+    if (!elements.has(id)) elements.set(id, { id, dataset: {}, disabled: false, hidden: false, value: '', children: [], attrs: {}, listeners: {}, style: { removeProperty() {} }, classList: { add() {}, remove() {}, toggle() {} },
       setAttribute(k, v) { this.attrs[k] = v; }, removeAttribute() {}, load() {}, focus() { document.activeElement = this; }, scrollIntoView() {}, append(...children) { this.children.push(...children); },
       addEventListener(k, fn) { (this.listeners[k] ??= []).push(fn); }, dispatch(type = 'click') { for (const fn of this.listeners[type] || []) fn({ preventDefault() {} }); }, click() { if (!this.disabled) this.dispatch(); },
       set textContent(value) { this.text = value; this.children = []; }, get textContent() { return this.text; }
@@ -33,7 +33,7 @@ function harness({ items = [makeItem(0), makeItem(1, 2025), makeItem(2)], yearDi
     return elements.get(id);
   }
   const state = { items, processing: false, importing: false, cancelRequested: false, outputBlob: null, outputUrl: '', outputInfo: null, outputStale: false, videosOnly: false, yearDividers, musicMode: 'none', musicVolume: .35, customMusicFile: null, aspectRatio: '16:9', fitMode: 'fit', backgroundMode: 'solid', quality: 'standard', sortMode: 'added', language };
-  const document = { body: element('body'), activeElement: null, querySelectorAll: () => [], createElement: type => type === 'canvas' ? canvas : element(`created-${elements.size}-${type}`) };
+  const document = { body: element('body'), activeElement: null, querySelector: () => null, querySelectorAll: () => [], createElement: type => type === 'canvas' ? canvas : element(`created-${elements.size}-${type}`) };
   const canvas = { width: 0, height: 0, getContext() { return {}; }, captureStream() { return { getTracks() { return [{ stop() {} }]; } }; } };
   class MediaRecorder {
     constructor() { this.events = {}; this.state = 'inactive'; }
@@ -54,6 +54,7 @@ function harness({ items = [makeItem(0), makeItem(1, 2025), makeItem(2)], yearDi
   const translationsEnd = source.indexOf('\n      };', translationsStart) + '\n      };'.length;
   vm.runInContext(source.slice(translationsStart, translationsEnd) + '\nfunction t(key){return translations[state.language][key] || key;}', ctx);
   const names = ['counts', 'musicSignature', 'outputSignature', 'markOutputChanged', 'isBusy', 'updateControls', 'renderOutputState', 'setProcessing', 'setImporting', 'clearOutput', 'sortTimestamp', 'itemYear', 'buildRenderSequence', 'yearDividerCount', 'outputDuration', 'removeItem', 'createVideo', 'setProcessStatus', 'updateProgress', 'hideError', 'showToast', 'releaseItem', 'setManualOrder', 'renderSortControl', 'renderReorderList', 'renderAfterItemChange', 'moveItem', 'sortItems', 'requestCancel', 'cancelledError', 'isCancelledError', 'throwIfCancelled', 'addFiles'];
+  for (const name of ['focusRenderedControl','restoreReorderFocus','restoreRemovalFocus']) if (source.includes('function '+name+'(')) names.push(name);
   if (source.includes('function reverseItems(')) names.push('reverseItems');
   vm.runInContext(source.split('\n').find(line => line.includes('const AppToast = (()=>')) + '\n' + names.map(extract).join('\n'), ctx);
   const reverseBinding = source.split('\n').find(line => line.includes("$('#reverseOrderButton').addEventListener"));

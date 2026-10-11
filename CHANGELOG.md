@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## Unreleased
+
+- Clarify Japanese and English help by removing internal layout, implementation, and audit commentary while preserving usage guidance and cautions.
+
 ## 1.3.2 - 2026-10-10
 
 - Keep modal background pages still and the Recreate header/actions reachable in short and narrow windows.

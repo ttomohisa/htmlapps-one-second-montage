@@ -208,3 +208,8 @@ v1.3.0 implementation complete. Built-in/custom looping music, year dividers, du
 - At narrow widths the app title and version wrap without clipping the language and Help controls. The decorative local-processing shield is unchanged.
 - Keyboard activation of Reorder controls never counts as a backdrop click. A moved row retains its corresponding enabled direction control (the other direction at a boundary). Remove and Undo restore a logical visible item action or an existing Add control, without activating it, changing the active filter, extending Undo, or taking focus from a newer modal/editor.
 - Clip and Recreate continue to use their explicit Close/Cancel/Escape actions rather than backdrop dismissal.
+
+## Shared mobile footer and Help build information
+
+- Hide only the informational page footer at the existing smartphone breakpoint (600px); preserve functional bottom navigation/actions and Help controls.
+- The existing build-information disclosure is the final item inside the scrollable Help body, retaining its metadata IDs, population, and desktop/mobile availability.

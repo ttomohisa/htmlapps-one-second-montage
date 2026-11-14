@@ -84,8 +84,9 @@ async function main() {
             assert.ok(await body.evaluate(el => el.scrollWidth <= el.clientWidth + 1), label + ': Help width');
             const headerBox = await page.locator('#helpDialog .dialog-header').boundingBox();
             assert.ok(headerBox && headerBox.x >= 0 && headerBox.x + headerBox.width <= width && headerBox.y >= 0 && headerBox.y + headerBox.height <= height, label + ': header visible');
-            const footerBox = await page.locator('#helpDialog .dialog-footer').boundingBox();
-            assert.ok(footerBox && footerBox.y >= 0 && footerBox.y + footerBox.height <= height, label + ': functional Help footer is visible');
+            assert.equal(await page.locator('#helpDialog .dialog-footer').count(), 0, label + ': redundant Help footer is absent');
+            assert.equal(await page.locator('#closeHelpFooterButton').count(), 0, label + ': redundant footer Close is absent');
+            assert.equal(await page.locator('#closeHelpButton').isVisible(), true, label + ': header Close remains visible');
             if (file === 'dist/index.html' && [1360, 320].includes(width)) {
               await page.screenshot({ path: path.join(results, `help-${language}-${width}.png`) });
             }
@@ -99,9 +100,6 @@ async function main() {
             assert.equal(await page.evaluate(() => scrollY), beforeScroll, label + ': background locked');
             await page.keyboard.press('Escape');
             assert.equal(await page.locator('#helpDialog').isVisible(), false, label + ': Escape');
-            await page.locator('#helpButton').click();
-            await page.locator('#closeHelpFooterButton').click();
-            assert.equal(await page.locator('#helpDialog').isVisible(), false, label + ': functional footer Close');
             await page.locator('#helpButton').click();
             await page.locator('#closeHelpButton').click();
             assert.equal(await page.locator('#helpDialog').isVisible(), false, label + ': reopen and Close');

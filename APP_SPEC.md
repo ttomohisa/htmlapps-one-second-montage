@@ -1,4 +1,4 @@
-# APP_SPEC — One Second Montage v1.3.2
+# APP_SPEC — One Second Montage v1.3.3
 
 ## Goal
 

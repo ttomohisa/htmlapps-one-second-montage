@@ -35,7 +35,7 @@ Just [open the demo](https://ttomohisa.github.io/htmlapps-one-second-montage/). 
 
 ### Use the downloaded HTML
 
-1. Download [`dist/index.html`](https://github.com/ttomohisa/htmlapps-one-second-montage/blob/main/dist/index.html) from this repository.
+1. Download [`one-second-montage.html`](https://github.com/ttomohisa/htmlapps-one-second-montage/blob/main/one-second-montage.html) from this repository. `dist/index.html` is generated during builds and is not committed.
 2. Open it directly in a current Chrome or Edge browser.
 
 The file is self-contained and does not require a local web server.

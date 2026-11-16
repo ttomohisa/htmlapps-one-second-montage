@@ -35,7 +35,7 @@ GitHub Pagesから最初のHTMLを読み込んだ後、ファイル読み込み�
 
 ### HTMLをダウンロードして使う
 
-1. リポジトリから [`dist/index.html`](https://github.com/ttomohisa/htmlapps-one-second-montage/blob/main/dist/index.html) をダウンロードします。
+1. リポジトリから [`one-second-montage.html`](https://github.com/ttomohisa/htmlapps-one-second-montage/blob/main/one-second-montage.html) をダウンロードします。`dist/index.html` はビルド時に生成され、リポジトリには含まれません。
 2. 現行のChromeまたはEdgeで直接開きます。
 
 ローカルWebサーバーは不要で、HTML単体で起動できます。

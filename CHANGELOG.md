@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 1.3.3 - 2026-11-17
+
+- Preserve the existing MP4 until replacement rendering has succeeded, including on cancellation and errors.
+- Handle canvas stream initialization failures without leaving the app busy.
+- Restore selected sort order after partial imports and Undo, and avoid redundant output-change warnings for inactive music options.
+- Guard repeated BGM previews, overlapping video editor openings and stale thumbnail refreshes.
+- Correct Japanese and English standalone download links and add regression tests.
+
 - Hide the informational page footer at the existing smartphone breakpoint and move the unchanged build information to the end of Help. Preserve native disclosure and dialog dismissal.
 
 - Clarify Japanese and English help by removing internal layout, implementation, and audit commentary while preserving usage guidance and cautions.

@@ -220,3 +220,87 @@ test('finishing an import does not restart the original five-second Undo window'
   h.tick(1000); h.element('#appToastAction').dispatch();
   assert.deepEqual(h.state.items.map(i => i.sequence), [0, 2, 3]); h.tick(600); assert.deepEqual(h.revoked, ['blob:synthetic-1']);
 });
+
+
+test('replacement keeps the old MP4 available until a successful rendering', async () => {
+  const h = harness(), original = new Blob(['original MP4']);
+  h.state.outputBlob = original; h.state.outputUrl = 'blob:original';
+  h.state.outputInfo = { signature: h.run('outputSignature()') };
+  const creation = h.run('createVideo()'); await h.started.promise;
+  assert.equal(h.state.outputBlob, original);
+  assert.equal(h.state.outputUrl, 'blob:original');
+  assert.deepEqual(h.revoked, []);
+  h.resume.resolve(); await creation;
+  assert.notEqual(h.state.outputBlob, original);
+  assert.equal(h.state.outputUrl, 'blob:synthetic-output');
+  assert.deepEqual(h.revoked, ['blob:original']);
+  assert.equal(h.state.processing, false);
+});
+
+test('rendering cancellation retains the original MP4', async () => {
+  const h = harness(), original = new Blob(['original MP4']);
+  h.state.outputBlob = original; h.state.outputUrl = 'blob:original';
+  const creation = h.run('createVideo()'); await h.started.promise;
+  h.run('requestCancel()'); h.resume.resolve(); await creation;
+  assert.equal(h.state.processing, false);
+  assert.equal(h.state.outputBlob, original);
+  assert.equal(h.state.outputUrl, 'blob:original');
+  assert.deepEqual(h.revoked, []);
+});
+
+test('empty inputs and missing custom music cannot erase the previous result', async () => {
+  const h = harness(), original = new Blob(['original MP4']);
+  h.state.outputBlob = original; h.state.outputUrl = 'blob:original';
+  h.state.items = [];
+  await h.run('createVideo()');
+  assert.equal(h.state.outputBlob, original);
+  assert.deepEqual(h.revoked, []);
+  h.state.items = [makeItem(0)];
+  h.state.musicMode = 'custom'; h.state.customMusicFile = null;
+  await h.run('createVideo()');
+  assert.equal(h.state.outputBlob, original);
+  assert.deepEqual(h.revoked, []);
+});
+
+test('captureStream initialization failure exits busy mode and retains old result', async () => {
+  const h = harness(), original = new Blob(['original MP4']);
+  h.state.outputBlob = original; h.state.outputUrl = 'blob:original';
+  h.run("document.createElement('canvas').captureStream = () => { throw new Error('capture unavailable'); }");
+  await assert.rejects(h.run('createVideo()'), /video|Video/);
+  assert.equal(h.state.processing, false);
+  assert.equal(h.state.outputBlob, original);
+  assert.deepEqual(h.revoked, []);
+});
+
+test('Undo honors the currently selected filename order', () => {
+  const h = harness();
+  h.state.items[0].file.name = 'z.jpg';
+  h.state.items[1].file.name = 'a.jpg';
+  h.state.items[2].file.name = 'b.jpg';
+  h.run('removeItem(0)');
+  h.run("sortItems('name')");
+  h.element('#appToastAction').click();
+  assert.deepEqual(h.state.items.map(i => i.file.name), ['a.jpg','b.jpg','z.jpg']);
+  assert.equal(h.state.sortMode,'name');
+});
+
+test('cancelled partial import still sorts already added items', async () => {
+  const h = harness({ items: [makeItem(0), makeItem(1)] });
+  h.state.items[0].file.name = 'b.jpg';
+  h.state.items[1].file.name = 'c.jpg';
+  h.run("sortItems('name')");
+  h.run("createImageItem = async file => { if(file.name === 'cancel.jpg'){requestCancel();throw cancelledError();}return {kind:'image',file,sequence:99,thumbUrl:'blob:new',capturedAt:0}; }");
+  await h.run("addFiles([{name:'a.jpg',size:100,lastModified:1},{name:'cancel.jpg',size:100,lastModified:1}])");
+  assert.equal(h.state.importing, false);
+  assert.deepEqual(h.state.items.map(i => i.file.name), ['a.jpg','b.jpg','c.jpg']);
+  assert.equal(h.state.sortMode, 'name');
+});
+
+test('inactive music controls do not flag the finished MP4 as stale', () => {
+  const h = harness(), signature=h.run('outputSignature()');
+  h.state.musicVolume=.95;
+  h.state.customMusicFile={name:'changed.mp3',size:250,lastModified:12};
+  assert.equal(h.run('outputSignature()'), signature);
+  h.state.musicMode='soft';
+  assert.notEqual(h.run('outputSignature()'),signature);
+});

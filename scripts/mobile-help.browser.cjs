@@ -101,16 +101,16 @@ async function main() {
             assert.equal(await page.locator('main #buildVersion').count(), 0, label);
             assert.equal(await page.locator('footer').isVisible(), width > 600, label);
             assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': hero shown initially');
-            await prepareApp(page, width, label);
-            assert.equal(await page.locator('.page-intro').isVisible(), width > 600, label + ': hero hidden after mobile import');
-            assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': local badge hidden only on mobile');
-            assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
-            assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
             if (width <= 600) {
               const fallback = page.locator('.file-fallback-button.block');
               assert.equal(await fallback.isVisible(), true, label + ': secondary file picker remains available');
               assert.equal(await fallback.evaluate(el => getComputedStyle(el).borderTopWidth), '0px', label + ': fallback is subtle');
             }
+            await prepareApp(page, width, label);
+            assert.equal(await page.locator('.page-intro').isVisible(), width > 600, label + ': hero hidden after mobile import');
+            assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': local badge hidden only on mobile');
+            assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
+            assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 
             await page.locator('#helpButton').click();

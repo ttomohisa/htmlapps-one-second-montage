@@ -9,6 +9,8 @@
 - Restore selected sort order after partial imports and Undo, and avoid redundant output-change warnings for inactive music options.
 - Guard repeated BGM previews, overlapping video editor openings and stale thumbnail refreshes.
 - Correct Japanese and English standalone download links and add regression tests.
+- Simplify the bilingual hero and empty state, hide the hero and privacy badge after mobile import, and make the secondary file picker visually quieter.
+- Add a pointer-following drag preview and a keyboard-accessible confirmation dialog before removing a media item.
 
 - Hide the informational page footer at the existing smartphone breakpoint and move the unchanged build information to the end of Help. Preserve native disclosure and dialog dismissal.
 

@@ -65,6 +65,64 @@ async function interactionSmoke(page, results, label) {
   assert.notEqual(await cards.first().getAttribute('data-sequence'),firstSequence,label + ': drag changes order');
   await page.screenshot({path:path.join(results,'mobile-drag-and-confirm.png')});
   console.log('PASS delete confirmation and floating card drag '+label);
+
+  // Adjust crop in the same browser canvas used by MP4 rendering.
+  await page.locator('label.choice:has(input[name="fitMode"][value="fill"])').click();
+  assert.equal(await page.locator('.thumb-position').count(),2,label+': show Position buttons only for Fill');
+  await page.locator('.thumb-position').first().click();
+  await page.locator('#positionLoading').waitFor({state:'hidden',timeout:15000});
+  assert.equal(await page.locator('#positionDialog').isVisible(),true,label+': Position dialog ready');
+  await page.locator('#positionCanvas').press('ArrowUp');
+  await page.locator('#cancelPositionButton').click();
+  assert.equal(await page.locator('.thumb-position.is-adjusted').count(),0,label+': cancelling Position has no effect');
+  await page.locator('.thumb-position').first().click();
+  await page.locator('#positionLoading').waitFor({state:'hidden',timeout:15000});
+  const canvas=page.locator('#positionCanvas');
+  const rect=await canvas.boundingBox();
+  assert(rect && rect.height>60,label+': crop preview can be dragged');
+  await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);
+  await page.mouse.down();
+  await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2-rect.height*.34,{steps:6});
+  await page.mouse.up();
+  await page.locator('#applyPositionButton').click();
+  assert.equal(await page.locator('.thumb-position.is-adjusted').count(),1,label+': crop position is retained');
+  await page.locator('.thumb-position.is-adjusted').click();
+  await page.locator('#positionLoading').waitFor({state:'hidden',timeout:15000});
+  await page.locator('#resetPositionButton').click();
+  await page.locator('#applyPositionButton').click();
+  assert.equal(await page.locator('.thumb-position.is-adjusted').count(),0,label+': reset position returns to center');
+  await page.locator('label.choice:has(input[name="fitMode"][value="fit"])').click();
+  assert.equal(await page.locator('.thumb-position').count(),0,label+': Position buttons hidden for Fit');
+
+  // The music fade setting appears only with a selected track.
+  assert.equal(await page.locator('#musicFadeControl').isVisible(),false,label+': fade is hidden without BGM');
+  await page.locator('label.music-option:has(input[value="soft"])').click();
+  assert.equal(await page.locator('#musicFadeControl').isVisible(),true,label+': fade appears with music');
+  assert.equal(await page.locator('#musicFadeOut').isChecked(),true,label+': fade defaults to on');
+  await page.locator('#musicFadeControl').click();
+  assert.equal(await page.locator('#musicFadeOut').isChecked(),false,label+': fade can be disabled');
+  await page.locator('#musicFadeControl').click();
+  assert.equal(await page.locator('#musicFadeOut').isChecked(),true,label+': fade can be enabled again');
+
+  // Exercise a real audio-enabled MediaRecorder path when supported.
+  const audioMp4=await page.evaluate(()=>['video/mp4;codecs=avc1.42E01E,opus','video/mp4;codecs=avc1,opus','video/mp4;codecs=vp9,opus','video/mp4'].some(type=>MediaRecorder.isTypeSupported(type)));
+  if(audioMp4){
+    await page.locator('#mobileRecreateButton').click();
+    await page.locator('#confirmReplaceButton').click();
+    await page.waitForFunction(()=>document.querySelector('#workspace').classList.contains('is-processing'),null,{timeout:12000});
+    await page.waitForFunction(()=>!document.querySelector('#workspace').classList.contains('is-processing'),null,{timeout:30000});
+    assert.equal(await page.locator('#errorBox').isVisible(),false,label+': BGM MP4 creation has no error');
+    const downloadPromise=page.waitForEvent('download');
+    await page.locator('#mobileSaveButton').click();
+    const audioDownload=await downloadPromise;
+    const audioPath=path.join(results,'synthetic-with-bgm.mp4');
+    await audioDownload.saveAs(audioPath);
+    assert.ok(fs.readFileSync(audioPath).includes(Buffer.from('ftyp')),label+': MP4 with BGM saved');
+    console.log('PASS BGM-enabled MP4 real browser recording '+label);
+  } else console.log('SKIP audio MP4 recording unsupported by this Chromium build');
+  await page.screenshot({path:path.join(results,'mobile-position-and-fade.png')});
+  console.log('PASS crop position and fade controls '+label);
+
 }
 
 async function main() {

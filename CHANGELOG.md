@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 1.4.0 - 2026-11-17
+
+- Add per-photo and per-video fill-frame position controls with a drag/keyboard preview, center reset, and cancel/apply workflow.
+- Add a default-on, toggleable BGM fade-out over the final two seconds (or full duration for shorter montages).
+- Correct a pre-existing undefined video stream reference in BGM-enabled MP4 generation and add crop/audio regressions.
+
 ## 1.3.3 - 2026-11-17
 
 - Preserve the existing MP4 until replacement rendering has succeeded, including on cancellation and errors.

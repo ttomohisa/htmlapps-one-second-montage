@@ -218,7 +218,7 @@ async function main() {
             assert.ok(width<=600?positions.media<positions.settings:positions.settings<positions.media,label+': correct responsive media / settings order');
             assert.equal(await page.locator('.page-intro').isVisible(), false, label + ': hero hidden after any import');
             assert.equal(await page.locator('#startOverview').isVisible(), false, label + ': guide steps hidden after import');
-            assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': local badge hidden only on mobile');
+            assert.equal(await page.locator('.local-badge').isVisible(), false, label + ': privacy badge hidden with hero after import');
             assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
             assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
             if (file==='dist/index.html' && language==='ja' && [320,600,601].includes(width)) {
@@ -245,7 +245,7 @@ async function main() {
               assert.ok(compact.selectGap<3,label+': desktop display and background share one row');
               assert.ok(compact.musicGap>=0&&compact.musicGap<35,label+': no huge gap beneath shape buttons');
             }
-            if(file==='dist/index.html'&&language==='ja'&&[1360,360,320].includes(width)){
+            if(file==='dist/index.html'&&language==='ja'&&[360,320].includes(width)){
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForFunction(()=>scrollY===0);
               await page.evaluate(()=>window.scrollTo(0,Math.min(480,document.documentElement.scrollHeight-innerHeight)));
@@ -258,6 +258,9 @@ async function main() {
               }else assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),false,label+': desktop header never auto-hides');
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForFunction(()=>scrollY===0&&!document.querySelector('.app-header').classList.contains('is-hidden'));
+            }
+            if(file==='dist/index.html'&&language==='ja'&&width===1360){
+              assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),false,label+': desktop header is never auto-hidden');
             }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 

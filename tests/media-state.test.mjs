@@ -87,3 +87,24 @@ test('editor cannot initialize twice and thumbnail refresh discards superseded w
   assert.equal(revoked.filter(x=>x==='blob:old').length,1);
   assert.equal(revoked.filter(x=>x==='blob:source').length,2);
 });
+
+
+test('onboarding, localized deletion confirmation, and drag-preview hooks remain wired', () => {
+  for (const [japanese, english] of [
+    ["写真と動画を1秒ずつつなぐ","Join photos and videos, one second each"],
+    ["この素材を削除しますか？","Remove this item?"]
+  ]) { assert(source.includes(japanese));assert(source.includes(english)); }
+  assert.match(source, /body\.has-items \.page-intro,\.local-badge\{display:none\}/);
+  assert.match(source, /document\.body\.classList\.toggle\('has-items',has\)/);
+  assert.match(source, /class="file-fallback-button block"/);
+  assert.match(source, /data-file-fallback'\]\)\.forEach\(button=>button\.addEventListener\('click',event=>\{event\.stopPropagation\(\)/);
+  assert.doesNotMatch(source, /id="processNote"|class="start-capabilities"/);
+  assert.match(source, /id="deleteDialog"/);
+  assert.match(source, /function requestRemoveItem\(item,origin\)/);
+  assert.match(source, /function closeDeleteDialog\(confirm=false\)/);
+  assert.match(source, /requestRemoveItem\(item,del\)/);
+  assert.match(source, /function positionDragGhost\(drag\)/);
+  assert.match(source, /function scrollDuringPointerDrag\(\)/);
+  assert.match(source, /ghost=card\.cloneNode\(true\)/);
+  assert.match(source, /drag\.ghost\.remove\(\)/);
+});

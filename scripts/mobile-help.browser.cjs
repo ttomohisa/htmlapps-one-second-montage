@@ -27,6 +27,46 @@ async function smoke(page, results, file) {
   console.log('PASS synthetic PNG to MP4 export '+file);
 }
 
+async function interactionSmoke(page, results, label) {
+  const png = await page.evaluate(() => {
+    const canvas=document.createElement('canvas');canvas.width=16;canvas.height=12;
+    canvas.getContext('2d').fillRect(0,0,16,12);
+    return canvas.toDataURL('image/png').split(',')[1];
+  });
+  await page.locator('#fileInput').setInputFiles([
+    {name:'photo-one.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')},
+    {name:'photo-two.png',mimeType:'image/png',buffer:Buffer.from(png,'base64')}
+  ]);
+  await page.waitForFunction(() => document.querySelectorAll('.thumb-card').length === 3);
+  const cards=page.locator('.thumb-card'), initial=await cards.count();
+  await page.locator('.thumb-delete').first().click();
+  assert.equal(await page.locator('#deleteDialog').isVisible(), true, label + ': delete dialog opens');
+  assert.equal(await cards.count(),initial,label + ': no early delete');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#deleteDialog').isVisible(), false, label + ': Escape cancels delete');
+  assert.equal(await cards.count(),initial,label + ': cancel retains item');
+  await page.locator('.thumb-delete').first().click();
+  await page.locator('#confirmDeleteButton').click();
+  await page.waitForFunction(() => document.querySelectorAll('.thumb-card').length === 2);
+  assert.equal(await page.locator('#deleteDialog').isVisible(), false, label + ': delete confirmed');
+  const firstSequence=await cards.first().getAttribute('data-sequence');
+  const handle=cards.first().locator('.drag-handle');
+  await handle.scrollIntoViewIfNeeded();
+  const start=await handle.boundingBox();
+  const target=await cards.last().boundingBox();
+  assert(start && target, label + ': drag geometry');
+  await page.mouse.move(start.x+start.width/2,start.y+start.height/2);
+  await page.mouse.down();
+  await page.mouse.move(target.x+target.width*.7,target.y+target.height*.65,{steps:6});
+  assert.equal(await page.locator('.drag-ghost').count(),1,label + ': carried card follows pointer');
+  assert.equal(await page.locator('.drag-ghost').evaluate(el=>getComputedStyle(el).position),'fixed',label + ': dragged card is floating');
+  await page.mouse.up();
+  assert.equal(await page.locator('.drag-ghost').count(),0,label + ': drag ghost cleaned up');
+  assert.notEqual(await cards.first().getAttribute('data-sequence'),firstSequence,label + ': drag changes order');
+  await page.screenshot({path:path.join(results,'mobile-drag-and-confirm.png')});
+  console.log('PASS delete confirmation and floating card drag '+label);
+}
+
 async function main() {
   const results = path.resolve(__dirname, '..', 'test-results', 'mobile-help');
   fs.mkdirSync(results, { recursive: true });
@@ -47,17 +87,30 @@ async function main() {
             await page.locator('#helpButton').waitFor();
             if (await page.locator('html').getAttribute('lang') !== language) await page.locator('#languageButton').click();
             assert.equal(await page.locator('[data-i18n="localBadge"]').textContent(), language === 'en' ? 'Fully local processing' : '完全ローカル処理', label);
-            assert.ok(await page.locator('.local-badge').evaluate(el => {
-              const box = el.getBoundingClientRect();
-              const range = document.createRange();
-              range.selectNodeContents(el.querySelector('[data-i18n="localBadge"]'));
-              return box.left >= 0 && box.right <= innerWidth && el.scrollWidth <= el.clientWidth + 1
-                && [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1 && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
-            }), label + ': badge text fits');
+            if (width <= 600) {
+              assert.equal(await page.locator('.local-badge').isVisible(), false, label + ': no mobile local badge');
+            } else {
+              assert.ok(await page.locator('.local-badge').evaluate(el => {
+                const box = el.getBoundingClientRect();
+                const range = document.createRange();
+                range.selectNodeContents(el.querySelector('[data-i18n="localBadge"]'));
+                return box.left >= 0 && box.right <= innerWidth && el.scrollWidth <= el.clientWidth + 1
+                  && [...range.getClientRects()].every(rect => rect.left >= box.left - 1 && rect.right <= box.right + 1 && rect.top >= box.top - 1 && rect.bottom <= box.bottom + 1);
+              }), label + ': desktop badge text fits');
+            }
             assert.equal(await page.locator('main #buildVersion').count(), 0, label);
             assert.equal(await page.locator('footer').isVisible(), width > 600, label);
+            assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': hero shown initially');
             await prepareApp(page, width, label);
-
+            assert.equal(await page.locator('.page-intro').isVisible(), width > 600, label + ': hero hidden after mobile import');
+            assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': local badge hidden only on mobile');
+            assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
+            assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
+            if (width <= 600) {
+              const fallback = page.locator('.file-fallback-button.block');
+              assert.equal(await fallback.isVisible(), true, label + ': secondary file picker remains available');
+              assert.equal(await fallback.evaluate(el => getComputedStyle(el).borderTopWidth), '0px', label + ': fallback is subtle');
+            }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 
             await page.locator('#helpButton').click();
@@ -107,6 +160,7 @@ async function main() {
             await page.mouse.click(2, 1);
             assert.equal(await page.locator('#helpDialog').isVisible(), false, label + ': backdrop');
             if (file !== 'one-second-montage.html' && language === 'ja' && width === 360) await smoke(page, results, file);
+            if (file === 'dist/index.html' && language === 'ja' && width === 360) await interactionSmoke(page, results, label);
             assert.deepEqual(errors, [], label + ': console errors');
             assert.deepEqual(requests, [], label + ': external runtime requests');
             console.log('PASS ' + label);

@@ -105,3 +105,17 @@ test('Output uses canvas video track with selected BGM and per-item position',()
   assert.match(source,/name==='fitMode'\)renderThumbs\(\)/);
   assert.match(source,/positionDialog\.addEventListener\('cancel'/);
 });
+
+
+test('Phone media order and crop overlay preserve desktop controls',()=>{
+  assert.match(source,/\.workspace\.has-items \.ready-panel\{display:flex;flex-direction:column\}/);
+  assert.match(source,/\.ready-panel>\.media-section\{order:1;/);
+  assert.match(source,/\.ready-panel>\.output-settings\{order:2;/);
+  assert.match(source,/function createPositionButton\(item,variant\)/);
+  assert.match(source,/preview\.append\(createPositionButton\(item,'mobile'\)\)/);
+  assert.match(source,/info\.append\(createPositionButton\(item,'inline'\)\)/);
+  assert.match(source,/\.thumb-position-mobile\{display:flex;position:absolute;/);
+  assert.match(source,/\.thumb-position-inline\{display:none\}/);
+  assert.match(source,/\.thumb-card\.has-position \.thumb-adjusted\{display:none\}/);
+  assert.match(source,/\.find\(control=>control\.getClientRects\(\)\.length>0\)/);
+});

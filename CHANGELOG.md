@@ -4,6 +4,8 @@
 
 ## 1.4.0 - 2026-11-17
 
+- Display the item grid above output settings on phones while preserving desktop order.
+- Move the phone-only crop-position control onto the thumbnail for a larger filename row, keeping the 44px touch target clear of the drag handle.
 - Add per-photo and per-video fill-frame position controls with a drag/keyboard preview, center reset, and cancel/apply workflow.
 - Add a default-on, toggleable BGM fade-out over the final two seconds (or full duration for shorter montages).
 - Correct a pre-existing undefined video stream reference in BGM-enabled MP4 generation and add crop/audio regressions.

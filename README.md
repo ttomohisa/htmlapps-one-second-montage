@@ -58,7 +58,7 @@ Repository validation (`scripts/check-repository.ps1`) additionally requires Nod
 3. Choose **Added**, **Date taken**, or **Filename**, or use **Reorder** for a custom sequence. **Reverse all items** reverses the current full order, including photos hidden by **Check videos only**, and switches to Manual.
 4. The app marks automatically selected highlights as **recommended 1 sec**. Select a video when you want to change its one-second window, and use **Play 1 second** to preview only the selected part.
 5. Remove unwanted items from their cards after confirming the deletion. **Undo** is available for 5 seconds after removal. It is disabled while importing or creating a video and becomes available again if that time has not expired when processing finishes or is cancelled.
-6. If needed, choose the video shape, item display mode, background style for Fit, and quality preset. When using **Fill frame**, open **Move** on an item card to drag its crop or use arrow keys.
+6. If needed, choose the video shape, item display mode, background style for Fit, and quality preset. When using **Fill frame**, open **Move** on an item card to drag its crop or use arrow keys. On phones, **Move** is at the lower left of the thumbnail.
 7. Optionally choose a built-in BGM or your own music, adjust its volume and the end fade-out (on by default), and enable one-second capture-year dividers.
 8. Select **Create video** and wait for the montage to render.
 9. Preview the result, edit the filename if needed, and select **Save MP4**.

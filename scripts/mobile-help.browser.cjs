@@ -66,16 +66,27 @@ async function interactionSmoke(page, results, label) {
   await page.screenshot({path:path.join(results,'mobile-drag-and-confirm.png')});
   console.log('PASS delete confirmation and floating card drag '+label);
 
+  // Mobile cards use the thumbnail, rather than the filename row, for the crop action.
+  const positionChoices=page.locator('.thumb-position:visible');
+  assert.equal(await positionChoices.count(),0,label+': no crop controls before Fill');
   // Adjust crop in the same browser canvas used by MP4 rendering.
   await page.locator('label.choice:has(input[name="fitMode"][value="fill"])').click();
-  assert.equal(await page.locator('.thumb-position').count(),2,label+': show Position buttons only for Fill');
-  await page.locator('.thumb-position').first().click();
+  assert.equal(await page.locator('.thumb-position:visible').count(),2,label+': show Position buttons only for Fill');
+  const overlay=page.locator('.thumb-position-mobile:visible').first();
+  const previewRect=await page.locator('.thumb-preview').first().boundingBox();
+  const overlayRect=await overlay.boundingBox();
+  const dragRect=await page.locator('.drag-handle').first().boundingBox();
+  assert.ok(previewRect&&overlayRect&&dragRect&&overlayRect.width>=44&&overlayRect.height>=44,label+': touch target is at least 44px');
+  assert.ok(overlayRect.x>=previewRect.x&&overlayRect.y>=previewRect.y&&overlayRect.x+overlayRect.width<=previewRect.x+previewRect.width+1&&overlayRect.y+overlayRect.height<=previewRect.y+previewRect.height+1,label+': Position is inside the thumbnail');
+  assert.ok(overlayRect.x+overlayRect.width<=dragRect.x+1,label+': Position does not overlap drag handle');
+  assert.equal(await page.locator('.thumb-position-inline:visible').count(),0,label+': filename row has no Position button');
+  await page.locator('.thumb-position:visible').first().click();
   await page.locator('#positionLoading').waitFor({state:'hidden',timeout:15000});
   assert.equal(await page.locator('#positionDialog').isVisible(),true,label+': Position dialog ready');
   await page.locator('#positionCanvas').press('ArrowUp');
   await page.locator('#cancelPositionButton').click();
-  assert.equal(await page.locator('.thumb-position.is-adjusted').count(),0,label+': cancelling Position has no effect');
-  await page.locator('.thumb-position').first().click();
+  assert.equal(await page.locator('.thumb-position.is-adjusted:visible').count(),0,label+': cancelling Position has no effect');
+  await page.locator('.thumb-position:visible').first().click();
   await page.locator('#positionLoading').waitFor({state:'hidden',timeout:15000});
   const canvas=page.locator('#positionCanvas');
   const rect=await canvas.boundingBox();
@@ -85,14 +96,14 @@ async function interactionSmoke(page, results, label) {
   await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2-rect.height*.34,{steps:6});
   await page.mouse.up();
   await page.locator('#applyPositionButton').click();
-  assert.equal(await page.locator('.thumb-position.is-adjusted').count(),1,label+': crop position is retained');
-  await page.locator('.thumb-position.is-adjusted').click();
+  assert.equal(await page.locator('.thumb-position.is-adjusted:visible').count(),1,label+': crop position is retained');
+  await page.locator('.thumb-position.is-adjusted:visible').click();
   await page.locator('#positionLoading').waitFor({state:'hidden',timeout:15000});
   await page.locator('#resetPositionButton').click();
   await page.locator('#applyPositionButton').click();
-  assert.equal(await page.locator('.thumb-position.is-adjusted').count(),0,label+': reset position returns to center');
+  assert.equal(await page.locator('.thumb-position.is-adjusted:visible').count(),0,label+': reset position returns to center');
   await page.locator('label.choice:has(input[name="fitMode"][value="fit"])').click();
-  assert.equal(await page.locator('.thumb-position').count(),0,label+': Position buttons hidden for Fit');
+  assert.equal(await page.locator('.thumb-position:visible').count(),0,label+': Position buttons hidden for Fit');
 
   // The music fade setting appears only with a selected track.
   assert.equal(await page.locator('#musicFadeControl').isVisible(),false,label+': fade is hidden without BGM');
@@ -165,10 +176,27 @@ async function main() {
               assert.equal(await fallback.evaluate(el => getComputedStyle(el).borderTopWidth), '0px', label + ': fallback is subtle');
             }
             await prepareApp(page, width, label);
+            const positions=await page.evaluate(()=>({media:document.querySelector('#readyPanel>.media-section').getBoundingClientRect().top,settings:document.querySelector('#readyPanel>.output-settings').getBoundingClientRect().top}));
+            assert.ok(width<=600?positions.media<positions.settings:positions.settings<positions.media,label+': correct responsive media / settings order');
             assert.equal(await page.locator('.page-intro').isVisible(), width > 600, label + ': hero hidden after mobile import');
             assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': local badge hidden only on mobile');
             assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
             assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
+            if (file==='dist/index.html' && language==='ja' && [320,600,601].includes(width)) {
+              await page.locator('label.choice:has(input[name="fitMode"][value="fill"])').click();
+              const visible=page.locator('.thumb-position:visible');
+              assert.equal(await visible.count(),1,label+': one visible crop action per card');
+              if(width<=600){
+                assert.equal(await page.locator('.thumb-position-mobile:visible').count(),1,label+': phone uses thumbnail crop action');
+                assert.equal(await page.locator('.thumb-position-inline:visible').count(),0,label+': phone hides inline crop action');
+                const crop=await visible.first().boundingBox(),handle=await page.locator('.drag-handle').first().boundingBox();
+                assert.ok(crop&&handle&&crop.width>=44&&crop.height>=44&&crop.x+crop.width<=handle.x+1,label+': narrow phone buttons fit without overlap');
+              }else{
+                assert.equal(await page.locator('.thumb-position-mobile:visible').count(),0,label+': desktop hides thumbnail crop action');
+                assert.equal(await page.locator('.thumb-position-inline:visible').count(),1,label+': desktop keeps inline crop action');
+              }
+              await page.locator('label.choice:has(input[name="fitMode"][value="fit"])').click();
+            }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 
             await page.locator('#helpButton').click();

@@ -220,6 +220,8 @@ async function main() {
             const positions=await page.evaluate(()=>({media:document.querySelector('#readyPanel>.media-section').getBoundingClientRect().top,settings:document.querySelector('#readyPanel>.output-settings').getBoundingClientRect().top}));
             assert.ok(width<=600?positions.media<positions.settings:positions.settings<positions.media,label+': correct responsive media / settings order');
             assert.equal(await page.locator('.page-intro').isVisible(), false, label + ': hero hidden after any import');
+            assert.equal(await page.locator('[data-i18n="readyTitle"]').count(),0,label+': confusing ready-state heading removed');
+            assert.equal(await page.locator('#itemCount').isVisible(),true,label+': material count remains visible');
             assert.equal(await page.locator('#startOverview').isVisible(), false, label + ': guide steps hidden after import');
             assert.equal(await page.locator('.local-badge').isVisible(), false, label + ': privacy badge hidden with hero after import');
             assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
@@ -248,22 +250,27 @@ async function main() {
               assert.ok(compact.selectGap<3,label+': desktop display and background share one row');
               assert.ok(compact.musicGap>=0&&compact.musicGap<35,label+': no huge gap beneath shape buttons');
             }
-            if(file==='dist/index.html'&&language==='ja'&&[360,320].includes(width)){
+            if(file==='dist/index.html'&&language==='ja'&&[360,320,600,601,1360].includes(width)){
               await page.evaluate(()=>window.scrollTo(0,0));
               await page.waitForFunction(()=>scrollY===0);
-              await page.evaluate(()=>window.scrollTo(0,Math.min(480,document.documentElement.scrollHeight-innerHeight)));
-              await page.waitForFunction(()=>scrollY>90);
+              const header=page.locator('.app-header');
+              const positioning=await header.evaluate(el=>getComputedStyle(el).position);
+              assert.equal(positioning,width<=600?'static':'sticky',label+': responsive header positioning');
               if(width<=600){
-                await page.waitForFunction(()=>document.querySelector('.app-header').classList.contains('is-hidden'));
-                assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),true,label+': header hides on downward scroll');
+                const topBox=await header.boundingBox();
+                assert.ok(topBox&&topBox.y>=-1,label+': header is visible near the page top');
+                await page.evaluate(()=>window.scrollTo(0,Math.min(480,document.documentElement.scrollHeight-innerHeight)));
+                await page.waitForFunction(()=>scrollY>90);
+                const scrolled=await header.boundingBox();
+                assert.ok(scrolled&&scrolled.y+scrolled.height<0,label+': header scrolls out of the viewport');
                 await page.evaluate(()=>window.scrollBy(0,-90));
-                await page.waitForFunction(()=>!document.querySelector('.app-header').classList.contains('is-hidden'));
-              }else assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),false,label+': desktop header never auto-hides');
-              await page.evaluate(()=>window.scrollTo(0,0));
-              await page.waitForFunction(()=>scrollY===0&&!document.querySelector('.app-header').classList.contains('is-hidden'));
-            }
-            if(file==='dist/index.html'&&language==='ja'&&width===1360){
-              assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),false,label+': desktop header is never auto-hidden');
+                const partial=await header.boundingBox();
+                assert.ok(partial&&partial.y+partial.height<0,label+': header stays hidden when scrolling up away from top');
+                await page.evaluate(()=>window.scrollTo(0,0));
+                await page.waitForFunction(()=>scrollY===0);
+                const restored=await header.boundingBox();
+                assert.ok(restored&&restored.y>=-1,label+': header returns with page top');
+              }
             }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 

@@ -128,10 +128,18 @@ test('Desktop settings and welcome layout remain compact',()=>{
   assert.match(source,/body\.has-items \.page-intro,body\.has-items \.start-overview,\.start-overview\[hidden\]\{display:none\}/);
 });
 
-test('Mobile header uses scroll direction with keyboard and dialog safeguards',()=>{
-  assert.match(source,/function initAdaptiveHeader\(\)/);
-  assert.match(source,/window\.addEventListener\('scroll',\(\)=>\{if\(queued\)return;queued=true;requestAnimationFrame\(sync\);\},\{passive:true\}\)/);
-  assert.match(source,/\.app-header\.is-hidden\{transform:translateY\(calc\(-100% - 2px\)\)\}/);
-  assert.match(source,/body:has\(dialog:modal\) \.app-header,\.app-header:focus-within\{transform:translateY\(0\)\}/);
-  assert.match(source,/applyLanguage\(\); initAdaptiveHeader\(\); renderSortControl\(\)/);
+test('Ready state omits ambiguous heading while preserving counts',()=>{
+  assert.doesNotMatch(source,/data-i18n="readyTitle"/);
+  assert.doesNotMatch(source,/readyTitle:'(?:このまま動画にできます|Ready to make the video)'/);
+  assert.match(source,/id="itemCount"/);
+  assert.match(source,/id="durationValue"/);
 });
+
+test('Mobile header scrolls away naturally, without direction listeners',()=>{
+  assert.match(source,/@media\(max-width:600px\)\{\.app-header\{position:static\}/);
+  assert.match(source,/\.app-header\{position:sticky;/);
+  assert.doesNotMatch(source,/function initAdaptiveHeader\(\)/);
+  assert.doesNotMatch(source,/\.app-header\.is-hidden/);
+  assert.doesNotMatch(source,/initAdaptiveHeader\(\);/);
+});
+

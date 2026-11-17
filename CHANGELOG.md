@@ -4,6 +4,10 @@
 
 ## 1.4.0 - 2026-11-17
 
+- Tighten the desktop output controls with display and background selectors side by side, eliminating unnecessary vertical whitespace.
+- Align onboarding steps to the full workspace width and center the supported-file caption inside the drop zone.
+- Hide the hero and three-step onboarding after import on all screen sizes, restoring them in the empty state.
+- Auto-hide the mobile header while scrolling down and restore it when scrolling up, near the page top, or while using a dialog; keep desktop behavior.
 - Simplify the output settings: illustrated aspect-ratio cards and native selects for display, background, quality, and music instead of repeated button grids.
 - Show actual output resolution in the quality selector, context-specific display guidance, and optional music controls only when applicable.
 - Display the item grid above output settings on phones while preserving desktop order.

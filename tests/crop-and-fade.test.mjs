@@ -119,3 +119,19 @@ test('Phone media order and crop overlay preserve desktop controls',()=>{
   assert.match(source,/\.thumb-card\.has-position \.thumb-adjusted\{display:none\}/);
   assert.match(source,/\.find\(control=>control\.getClientRects\(\)\.length>0\)/);
 });
+
+
+test('Desktop settings and welcome layout remain compact',()=>{
+  assert.match(source,/@media\(min-width:821px\)\{[\s\S]*?\.settings-display\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(source,/\.start-flow\{width:100%;display:grid;grid-template-columns:repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(source,/\.empty-format\{margin:9px auto 0!important;/);
+  assert.match(source,/body\.has-items \.page-intro,body\.has-items \.start-overview,\.start-overview\[hidden\]\{display:none\}/);
+});
+
+test('Mobile header uses scroll direction with keyboard and dialog safeguards',()=>{
+  assert.match(source,/function initAdaptiveHeader\(\)/);
+  assert.match(source,/window\.addEventListener\('scroll',\(\)=>\{if\(queued\)return;queued=true;requestAnimationFrame\(sync\);\},\{passive:true\}\)/);
+  assert.match(source,/\.app-header\.is-hidden\{transform:translateY\(calc\(-100% - 2px\)\)\}/);
+  assert.match(source,/body:has\(dialog:modal\) \.app-header,\.app-header:focus-within\{transform:translateY\(0\)\}/);
+  assert.match(source,/applyLanguage\(\); initAdaptiveHeader\(\); renderSortControl\(\)/);
+});

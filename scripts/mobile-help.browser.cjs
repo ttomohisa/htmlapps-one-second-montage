@@ -190,6 +190,16 @@ async function main() {
             assert.equal(await page.locator('main #buildVersion').count(), 0, label);
             assert.equal(await page.locator('footer').isVisible(), width > 600, label);
             assert.equal(await page.locator('.page-intro').isVisible(), true, label + ': hero shown initially');
+            assert.equal(await page.locator('#startOverview').isVisible(), true, label + ': first-visit steps shown initially');
+            if(file==='dist/index.html'&&language==='ja'){
+              const positions=await page.evaluate(()=>{
+                const box=selector=>document.querySelector(selector).getBoundingClientRect();
+                const workspace=box('#workspace'),flow=box('.start-flow'),picker=box('#dropZone'),formats=box('.empty-format');
+                return {leftGap:Math.abs(workspace.left-flow.left),rightGap:Math.abs(workspace.right-flow.right),formatCenter:Math.abs((picker.left+picker.right)/2-(formats.left+formats.right)/2)};
+              });
+              assert.ok(positions.leftGap<3&&positions.rightGap<3,label+': three steps align with work area');
+              assert.ok(positions.formatCenter<3,label+': format list is centered in drop zone');
+            }
             if (width <= 600) {
               const fallback = page.locator('.file-fallback-button.block');
               assert.equal(await fallback.isVisible(), true, label + ': secondary file picker remains available');
@@ -206,7 +216,8 @@ async function main() {
             }
             const positions=await page.evaluate(()=>({media:document.querySelector('#readyPanel>.media-section').getBoundingClientRect().top,settings:document.querySelector('#readyPanel>.output-settings').getBoundingClientRect().top}));
             assert.ok(width<=600?positions.media<positions.settings:positions.settings<positions.media,label+': correct responsive media / settings order');
-            assert.equal(await page.locator('.page-intro').isVisible(), width > 600, label + ': hero hidden after mobile import');
+            assert.equal(await page.locator('.page-intro').isVisible(), false, label + ': hero hidden after any import');
+            assert.equal(await page.locator('#startOverview').isVisible(), false, label + ': guide steps hidden after import');
             assert.equal(await page.locator('.local-badge').isVisible(), width > 600, label + ': local badge hidden only on mobile');
             assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
             assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
@@ -224,6 +235,29 @@ async function main() {
                 assert.equal(await page.locator('.thumb-position-inline:visible').count(),1,label+': desktop keeps inline crop action');
               }
               await page.locator('#fitModeSelect').selectOption('fit');
+            }
+            if(file==='dist/index.html'&&language==='ja'&&width===1360){
+              const compact=await page.evaluate(()=>{
+                const box=selector=>document.querySelector(selector).getBoundingClientRect();
+                const fit=box('#fitModeSelect'),backdrop=box('#backgroundModeSelect'),shapes=box('.settings-shape'),music=box('.enhancement-grid');
+                return {selectGap:Math.abs(fit.top-backdrop.top),musicGap:music.top-shapes.bottom};
+              });
+              assert.ok(compact.selectGap<3,label+': desktop display and background share one row');
+              assert.ok(compact.musicGap>=0&&compact.musicGap<35,label+': no huge gap beneath shape buttons');
+            }
+            if(file==='dist/index.html'&&language==='ja'&&[1360,360,320].includes(width)){
+              await page.evaluate(()=>window.scrollTo(0,0));
+              await page.waitForFunction(()=>scrollY===0);
+              await page.evaluate(()=>window.scrollTo(0,Math.min(480,document.documentElement.scrollHeight-innerHeight)));
+              await page.waitForFunction(()=>scrollY>90);
+              if(width<=600){
+                await page.waitForFunction(()=>document.querySelector('.app-header').classList.contains('is-hidden'));
+                assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),true,label+': header hides on downward scroll');
+                await page.evaluate(()=>window.scrollBy(0,-90));
+                await page.waitForFunction(()=>!document.querySelector('.app-header').classList.contains('is-hidden'));
+              }else assert.equal(await page.locator('.app-header').evaluate(el=>el.classList.contains('is-hidden')),false,label+': desktop header never auto-hides');
+              await page.evaluate(()=>window.scrollTo(0,0));
+              await page.waitForFunction(()=>scrollY===0&&!document.querySelector('.app-header').classList.contains('is-hidden'));
             }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 

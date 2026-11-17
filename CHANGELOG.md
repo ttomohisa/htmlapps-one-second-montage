@@ -4,6 +4,8 @@
 
 ## 1.4.0 - 2026-11-17
 
+- Simplify the output settings: illustrated aspect-ratio cards and native selects for display, background, quality, and music instead of repeated button grids.
+- Show actual output resolution in the quality selector, context-specific display guidance, and optional music controls only when applicable.
 - Display the item grid above output settings on phones while preserving desktop order.
 - Move the phone-only crop-position control onto the thumbnail for a larger filename row, keeping the 44px touch target clear of the drag handle.
 - Add per-photo and per-video fill-frame position controls with a drag/keyboard preview, center reset, and cancel/apply workflow.

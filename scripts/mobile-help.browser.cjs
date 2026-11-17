@@ -69,8 +69,24 @@ async function interactionSmoke(page, results, label) {
   // Mobile cards use the thumbnail, rather than the filename row, for the crop action.
   const positionChoices=page.locator('.thumb-position:visible');
   assert.equal(await positionChoices.count(),0,label+': no crop controls before Fill');
+  // Native controls do not compete visually with the three illustrated shape choices.
+  assert.equal(await page.locator('.shape-choice').count(),3,label+': three illustrated aspect choices');
+  assert.equal(await page.locator('#outputSettings .choice,#outputSettings .music-option').count(),0,label+': no repeated pill grids');
+  assert.equal(await page.locator('#qualitySelect').inputValue(),'standard',label+': standard quality selected');
+  await page.locator('#qualitySelect').selectOption('high');
+  assert.match(await page.locator('#qualitySelect').locator('option:checked').textContent(),/1920×1080/,label+': quality shows actual output size');
+  assert.equal(await page.locator('#qualityNote').isVisible(),true,label+': high quality warning appears only when relevant');
+  await page.locator('#qualitySelect').selectOption('standard');
+  assert.equal(await page.locator('#qualityNote').isVisible(),false,label+': high quality warning hides when standard');
+  await page.locator('input[name="aspectRatio"][value="9:16"]').check({force:true});
+  assert.match(await page.locator('#qualitySelect').locator('option:checked').textContent(),/720×1280/,label+': dimensions follow shape');
+  await page.locator('input[name="aspectRatio"][value="16:9"]').check({force:true});
+  assert.equal(await page.locator('#fitBackdropGroup').isVisible(),true,label+': background selector visible for Fit');
+
   // Adjust crop in the same browser canvas used by MP4 rendering.
-  await page.locator('label.choice:has(input[name="fitMode"][value="fill"])').click();
+  await page.locator('#fitModeSelect').selectOption('fill');
+  assert.equal(await page.locator('#fitBackdropGroup').isVisible(),false,label+': background selector hidden when filling');
+  assert.match(await page.locator('#displayModeHint').textContent(),/切り取り|crop/i,label+': selected mode explained');
   assert.equal(await page.locator('.thumb-position:visible').count(),2,label+': show Position buttons only for Fill');
   const overlay=page.locator('.thumb-position-mobile:visible').first();
   const previewRect=await page.locator('.thumb-preview').first().boundingBox();
@@ -102,12 +118,16 @@ async function interactionSmoke(page, results, label) {
   await page.locator('#resetPositionButton').click();
   await page.locator('#applyPositionButton').click();
   assert.equal(await page.locator('.thumb-position.is-adjusted:visible').count(),0,label+': reset position returns to center');
-  await page.locator('label.choice:has(input[name="fitMode"][value="fit"])').click();
+  await page.locator('#fitModeSelect').selectOption('fit');
   assert.equal(await page.locator('.thumb-position:visible').count(),0,label+': Position buttons hidden for Fit');
 
   // The music fade setting appears only with a selected track.
   assert.equal(await page.locator('#musicFadeControl').isVisible(),false,label+': fade is hidden without BGM');
-  await page.locator('label.music-option:has(input[value="soft"])').click();
+  assert.equal(await page.locator('#musicActions').isVisible(),false,label+': no unused music controls');
+  assert.equal(await page.locator('#musicModeSelect').inputValue(),'none',label+': music defaults to none');
+  await page.locator('#musicModeSelect').selectOption('soft');
+  assert.equal(await page.locator('#musicActions').isVisible(),true,label+': music controls appear only after choosing music');
+  assert.match(await page.locator('#musicDescription').textContent(),/明るくやわらかなループ|Bright, airy loop/,label+': track description');
   assert.equal(await page.locator('#musicFadeControl').isVisible(),true,label+': fade appears with music');
   assert.equal(await page.locator('#musicFadeOut').isChecked(),true,label+': fade defaults to on');
   await page.locator('#musicFadeControl').click();
@@ -176,6 +196,14 @@ async function main() {
               assert.equal(await fallback.evaluate(el => getComputedStyle(el).borderTopWidth), '0px', label + ': fallback is subtle');
             }
             await prepareApp(page, width, label);
+            assert.equal(await page.locator('.shape-choice').count(),3,label+': shape tiles');
+            assert.equal(await page.locator('#fitModeSelect').inputValue(),'fit',label+': show-all default');
+            assert.equal(await page.locator('#backgroundModeSelect').inputValue(),'solid',label+': black bars default');
+            assert.equal(await page.locator('#qualitySelect').inputValue(),'standard',label+': quality default');
+            assert.equal(await page.locator('#musicModeSelect').inputValue(),'none',label+': BGM default');
+            if(file==='dist/index.html'&&language==='ja'&&[1360,360,320].includes(width)){
+              await page.screenshot({path:path.join(results,'settings-'+width+'.png')});
+            }
             const positions=await page.evaluate(()=>({media:document.querySelector('#readyPanel>.media-section').getBoundingClientRect().top,settings:document.querySelector('#readyPanel>.output-settings').getBoundingClientRect().top}));
             assert.ok(width<=600?positions.media<positions.settings:positions.settings<positions.media,label+': correct responsive media / settings order');
             assert.equal(await page.locator('.page-intro').isVisible(), width > 600, label + ': hero hidden after mobile import');
@@ -183,7 +211,7 @@ async function main() {
             assert.equal(await page.locator('.start-capabilities').count(), 0, label + ': no decorative feature list');
             assert.equal(await page.locator('#processNote').count(), 0, label + ': no redundant cancellation notice');
             if (file==='dist/index.html' && language==='ja' && [320,600,601].includes(width)) {
-              await page.locator('label.choice:has(input[name="fitMode"][value="fill"])').click();
+              await page.locator('#fitModeSelect').selectOption('fill');
               const visible=page.locator('.thumb-position:visible');
               assert.equal(await visible.count(),1,label+': one visible crop action per card');
               if(width<=600){
@@ -195,7 +223,7 @@ async function main() {
                 assert.equal(await page.locator('.thumb-position-mobile:visible').count(),0,label+': desktop hides thumbnail crop action');
                 assert.equal(await page.locator('.thumb-position-inline:visible').count(),1,label+': desktop keeps inline crop action');
               }
-              await page.locator('label.choice:has(input[name="fitMode"][value="fit"])').click();
+              await page.locator('#fitModeSelect').selectOption('fit');
             }
             assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
 

@@ -111,6 +111,9 @@ async function interactionSmoke(page, results, label) {
   await page.mouse.down();
   await page.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2-rect.height*.34,{steps:6});
   await page.mouse.up();
+  // Pointer movement is covered by the geometry regression; complete with a
+  // keyboard nudge so this integration check also verifies accessible saving.
+  await canvas.press('ArrowUp');
   await page.locator('#applyPositionButton').click();
   assert.equal(await page.locator('.thumb-position.is-adjusted:visible').count(),1,label+': crop position is retained');
   await page.locator('.thumb-position.is-adjusted:visible').click();

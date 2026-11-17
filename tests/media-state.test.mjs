@@ -97,7 +97,7 @@ test('onboarding, localized deletion confirmation, and drag-preview hooks remain
   assert.match(source, /body\.has-items \.page-intro,\.local-badge\{display:none\}/);
   assert.match(source, /document\.body\.classList\.toggle\('has-items',has\)/);
   assert.match(source, /class="file-fallback-button block"/);
-  assert.match(source, /data-file-fallback'\]\)\.forEach\(button=>button\.addEventListener\('click',event=>\{event\.stopPropagation\(\)/);
+  assert.match(source, /event=>\{event\.stopPropagation\(\);if\(isBusy\(\)\)return;fileFallbackInput\.click\(\)/);
   assert.doesNotMatch(source, /id="processNote"|class="start-capabilities"/);
   assert.match(source, /id="deleteDialog"/);
   assert.match(source, /function requestRemoveItem\(item,origin\)/);

@@ -31,19 +31,21 @@ function harness(){
   document={body:null,activeElement:null,createElement:tag=>new Element(tag),querySelectorAll:selector=>query(selector),querySelector:selector=>query(selector)[0]||null};document.body=new Element('body','body');document.activeElement=document.body;
   function add(id,parent=document.body,tag='button'){const e=new Element(tag,id);parent.append(e);return e;}
   const reorder=add('reorderDialog',document.body,'dialog');for(const id of ['reorderList','reverseOrderButton','closeReorderButton','doneReorderButton'])add(id,reorder);
+  const deleteDialog=add('deleteDialog',document.body,'dialog');for(const id of ['deleteItemName','closeDeleteButton','cancelDeleteButton','confirmDeleteButton'])add(id,deleteDialog);
   for(const id of ['thumbGrid','filterEmpty','reorderButton','addButton','mobileAddButton','chooseButton','sortSelect','helpButton'])add(id);add('helpDialog',document.body,'dialog');
   const $=s=>document.querySelector(s);
   const state={items:[0,1,2].map(sequence=>({sequence,kind:sequence===1?'video':'image',file:{name:'long-'+sequence,size:1},duration:8,clipStart:0,adjusted:false})),videosOnly:false,processing:false,importing:false,clipEditor:null};
   const ctx=vm.createContext({document,state,$,requestAnimationFrame:fn=>fn(),setTimeout:fn=>{timers.push(fn);return ++n;},clearTimeout(){},t:k=>k,formatMediaDuration:String,formatBytes:String,formatClipStart:String,renderSortControl(){},renderSummary(){},renderVideoFilter(){},markOutputChanged(){},announce(){},releaseItem(){},showToast(message,options={}){if(options.onAction)undo=options.onAction;}});
-  const names=['counts','isBusy','renderReorderList','renderThumbs','setManualOrder','moveItem','reverseItems','renderAfterItemChange','removeItem'];
+  const names=['counts','isBusy','renderReorderList','renderThumbs','setManualOrder','moveItem','reverseItems','renderAfterItemChange','removeItem','requestRemoveItem','closeDeleteDialog'];
   for(const name of ['focusRenderedControl','restoreReorderFocus','restoreRemovalFocus'])if(source.includes('function '+name+'('))names.push(name);
-  vm.runInContext(names.map(extract).join('\n'),ctx);vm.runInContext(source.split('\n').find(l=>l.includes("const reorderDialog=$('#reorderDialog')")),ctx);vm.runInContext(source.split('\n').find(l=>l.includes("$('#reverseOrderButton').addEventListener")),ctx);
+  vm.runInContext(names.map(extract).join('\n')+'\nlet pendingRemoval=null;',ctx);vm.runInContext(source.split('\n').find(l=>l.includes("const reorderDialog=$('#reorderDialog')")),ctx);vm.runInContext(source.split('\n').find(l=>l.includes("$('#reverseOrderButton').addEventListener")),ctx);vm.runInContext(source.split('\n').find(l=>l.includes("const deleteDialog=$('#deleteDialog')")),ctx);
   const run=s=>vm.runInContext(s,ctx);run('renderThumbs();renderReorderList()');
   const card=seq=>$('#thumbGrid').children.find(c=>c.dataset.sequence===String(seq)||state.items[+c.dataset.index]?.sequence===seq);
   const remove=seq=>card(seq)?.querySelector('.thumb-delete');
   const row=seq=>$('#reorderList').children.find((r,i)=>r.dataset.sequence===String(seq)||state.items[i]?.sequence===seq);
   const move=(seq,direction)=>row(seq)?.querySelectorAll('.reorder-control')[direction==='up'?0:1];
-  return{state,document,$,run,remove,move,reorder,undo:()=>undo?.(),add};
+  const deleteConfirmed=seq=>{remove(seq).click();$('#confirmDeleteButton').click();};
+  return{state,document,$,run,remove,deleteConfirmed,move,reorder,undo:()=>undo?.(),add};
 }
 
 test('all modal dialogs lock the page, while ordinary closed dialogs do not',()=>assert.match(source,/html:has\(dialog:modal\),\s*body:has\(dialog:modal\)\s*\{\s*overflow:hidden\s*\}/));
@@ -54,10 +56,38 @@ for(const direction of ['up','down'])test(`Reorder ${direction} preserves dialog
 test('Reorder retains same enabled direction away from boundaries',()=>{const h=harness();h.state.items.push({...h.state.items[2],sequence:3});h.run('renderReorderList()');h.reorder.showModal();h.move(1,'down').click();assert.equal(h.document.activeElement,h.move(1,'down'));});
 test('Reverse keyboard activation stays open and keeps its persistent control',()=>{const h=harness();h.reorder.showModal();h.$('#reverseOrderButton').focus();h.$('#reverseOrderButton').click();assert.equal(h.reorder.open,true);assert.equal(h.document.activeElement,h.$('#reverseOrderButton'));});
 test('actual Reorder backdrop closes, inside dialog click does not',()=>{const h=harness();h.reorder.showModal();h.reorder.dispatch('click',{clientX:50,clientY:50});assert.equal(h.reorder.open,true);h.reorder.dispatch('click',{clientX:5,clientY:50});assert.equal(h.reorder.open,false);assert.equal(h.document.activeElement,h.$('#reorderButton'));});
-for(const [index,neighbor]of [[0,1],[1,2],[2,1]])test(`Remove ${index} focuses surviving logical control and Undo restores its original control`,()=>{const h=harness(),item=h.state.items[index];h.remove(item.sequence).focus();h.remove(item.sequence).click();assert.equal(h.document.activeElement,h.remove(neighbor));h.undo();assert.equal(h.document.activeElement,h.remove(item.sequence));assert.equal(h.state.items[index],item);assert.equal(h.state.items.length,3);});
-test('only remaining removal falls back to a visible existing Add control',()=>{const h=harness();h.state.items=[h.state.items[0]];h.run('renderThumbs()');h.$('#addButton').hidden=true;h.$('#mobileAddButton').hidden=true;h.remove(0).click();assert.equal(h.document.activeElement,h.$('#chooseButton'));assert.equal(h.state.items.length,0);});
-test('Undo under videos-only filter does not reveal an image or change the filter',()=>{const h=harness();h.remove(0).click();h.state.videosOnly=true;h.run('renderThumbs()');h.undo();assert.equal(h.state.videosOnly,true);assert.equal(h.document.activeElement,h.remove(1));assert.equal(h.state.items[0].sequence,0);});
-for(const ownership of ['modal','editor','busy'])test(`restoration does not steal newer ${ownership} focus`,()=>{const h=harness();h.remove(0).click();const owner=h.$('#helpButton');owner.focus();if(ownership==='modal')h.$('#helpDialog').showModal();if(ownership==='editor')h.state.clipEditor={};if(ownership==='busy')h.state.processing=true;h.undo();assert.equal(h.document.activeElement,owner);});
-test('invalid removal and repeated Undo are no-ops for data and focus',()=>{const h=harness();h.$('#helpButton').focus();h.run('removeItem(-1)');assert.equal(h.document.activeElement,h.$('#helpButton'));h.remove(0).click();h.undo();h.$('#helpButton').focus();h.undo();assert.equal(h.state.items.length,3);assert.equal(h.document.activeElement,h.$('#helpButton'));});
+for(const [index,neighbor]of [[0,1],[1,2],[2,1]])test(`Remove ${index} focuses surviving logical control and Undo restores its original control`,()=>{const h=harness(),item=h.state.items[index];h.remove(item.sequence).focus();h.deleteConfirmed(item.sequence);assert.equal(h.document.activeElement,h.remove(neighbor));h.undo();assert.equal(h.document.activeElement,h.remove(item.sequence));assert.equal(h.state.items[index],item);assert.equal(h.state.items.length,3);});
+test('only remaining removal falls back to a visible existing Add control',()=>{const h=harness();h.state.items=[h.state.items[0]];h.run('renderThumbs()');h.$('#addButton').hidden=true;h.$('#mobileAddButton').hidden=true;h.deleteConfirmed(0);assert.equal(h.document.activeElement,h.$('#chooseButton'));assert.equal(h.state.items.length,0);});
+test('Undo under videos-only filter does not reveal an image or change the filter',()=>{const h=harness();h.deleteConfirmed(0);h.state.videosOnly=true;h.run('renderThumbs()');h.undo();assert.equal(h.state.videosOnly,true);assert.equal(h.document.activeElement,h.remove(1));assert.equal(h.state.items[0].sequence,0);});
+for(const ownership of ['modal','editor','busy'])test(`restoration does not steal newer ${ownership} focus`,()=>{const h=harness();h.deleteConfirmed(0);const owner=h.$('#helpButton');owner.focus();if(ownership==='modal')h.$('#helpDialog').showModal();if(ownership==='editor')h.state.clipEditor={};if(ownership==='busy')h.state.processing=true;h.undo();assert.equal(h.document.activeElement,owner);});
+test('invalid removal and repeated Undo are no-ops for data and focus',()=>{const h=harness();h.$('#helpButton').focus();h.run('removeItem(-1)');assert.equal(h.document.activeElement,h.$('#helpButton'));h.deleteConfirmed(0);h.undo();h.$('#helpButton').focus();h.undo();assert.equal(h.state.items.length,3);assert.equal(h.document.activeElement,h.$('#helpButton'));});
 test('focus helper skips disconnected, hidden, disabled, and unsuccessful candidates',()=>{const h=harness(),gone=h.document.createElement('button'),hidden=h.add('hidden'),disabled=h.add('disabled'),refusing=h.add('refusing');hidden.hidden=true;disabled.disabled=true;refusing.focus=()=>{};h.state.candidates=[gone,hidden,disabled,refusing,h.$('#chooseButton')];h.run('focusRenderedControl(state.candidates)');assert.equal(h.document.activeElement,h.$('#chooseButton'));assert.equal(h.document.activeElement.focusOptions.preventScroll,true);});
 test('Reorder restoration respects a newer modal or editor owner',()=>{const h=harness();h.$('#helpDialog').showModal();h.$('#helpButton').focus();h.run("restoreReorderFocus(1,'down')");assert.equal(h.document.activeElement,h.$('#helpButton'));h.$('#helpDialog').close();h.reorder.showModal();h.state.clipEditor={};h.run("restoreReorderFocus(1,'down')");assert.equal(h.document.activeElement,h.$('#helpButton'));});
+
+
+test('delete confirmation Cancel and Escape never modify items and restore focus', () => {
+  const h=harness(),before=[...h.state.items],button=h.remove(1);
+  button.focus();button.click();
+  assert.equal(h.$('#deleteDialog').open,true);
+  assert.deepEqual(h.state.items,before);
+  h.$('#cancelDeleteButton').click();
+  assert.equal(h.$('#deleteDialog').open,false);
+  assert.deepEqual(h.state.items,before);
+  assert.equal(h.document.activeElement,button);
+  button.click();h.$('#deleteDialog').dispatch('cancel');
+  assert.equal(h.$('#deleteDialog').open,false);
+  assert.deepEqual(h.state.items,before);
+  assert.equal(h.document.activeElement,button);
+});
+
+test('delete confirmation removes only the chosen item and retains Undo', () => {
+  const h=harness(), original=[...h.state.items];
+  h.remove(1).click();
+  assert.equal(h.$('#deleteItemName').textContent,original[1].file.name);
+  assert.equal(h.state.items.length,3);
+  h.$('#confirmDeleteButton').click();
+  assert.equal(h.$('#deleteDialog').open,false);
+  assert.deepEqual(h.state.items.map(x=>x.sequence),[0,2]);
+  h.undo();
+  assert.deepEqual(h.state.items.map(x=>x.sequence),[0,1,2]);
+});

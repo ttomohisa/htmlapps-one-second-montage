@@ -2,6 +2,31 @@
 
 ## Unreleased
 
+## 1.4.0 - 2026-11-17
+
+- Remove the ambiguous ready-state heading while preserving the item count, duration and creation actions.
+- Show the mobile header only when the page is near its beginning; it now scrolls away naturally and does not reappear on upward swipes until returning to the top. Desktop keeps its sticky header.
+- Tighten the desktop output controls with display and background selectors side by side, eliminating unnecessary vertical whitespace.
+- Align onboarding steps to the full workspace width and center the supported-file caption inside the drop zone.
+- Hide the hero and three-step onboarding after import on all screen sizes, restoring them in the empty state.
+- Simplify the output settings: illustrated aspect-ratio cards and native selects for display, background, quality, and music instead of repeated button grids.
+- Show actual output resolution in the quality selector, context-specific display guidance, and optional music controls only when applicable.
+- Display the item grid above output settings on phones while preserving desktop order.
+- Move the phone-only crop-position control onto the thumbnail for a larger filename row, keeping the 44px touch target clear of the drag handle.
+- Add per-photo and per-video fill-frame position controls with a drag/keyboard preview, center reset, and cancel/apply workflow.
+- Add a default-on, toggleable BGM fade-out over the final two seconds (or full duration for shorter montages).
+- Correct a pre-existing undefined video stream reference in BGM-enabled MP4 generation and add crop/audio regressions.
+
+## 1.3.3 - 2026-11-17
+
+- Preserve the existing MP4 until replacement rendering has succeeded, including on cancellation and errors.
+- Handle canvas stream initialization failures without leaving the app busy.
+- Restore selected sort order after partial imports and Undo, and avoid redundant output-change warnings for inactive music options.
+- Guard repeated BGM previews, overlapping video editor openings and stale thumbnail refreshes.
+- Correct Japanese and English standalone download links and add regression tests.
+- Simplify the bilingual hero and empty state, hide the hero and privacy badge after mobile import, and make the secondary file picker visually quieter.
+- Add a pointer-following drag preview and a keyboard-accessible confirmation dialog before removing a media item.
+
 - Hide the informational page footer at the existing smartphone breakpoint and move the unchanged build information to the end of Help. Preserve native disclosure and dialog dismissal.
 
 - Clarify Japanese and English help by removing internal layout, implementation, and audit commentary while preserving usage guidance and cautions.

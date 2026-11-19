@@ -20,9 +20,9 @@ GitHub Pages delivers the initial HTML. After it loads, file reading, thumbnails
 
 - **One item, one second** — Every photo contributes one second. For each video, a lightweight local analysis checks brightness, visual change, and image detail to choose a promising one-second highlight; uncertain cases fall back to the middle second.
 - **Photos and videos in one batch** — Mix JPEG, PNG, WebP, MP4, and WebM files, then review them in one thumbnail grid. MOV / M4V also work when the browser can decode them.
-- **Edit only what needs attention** — Reorder items, reverse the whole sequence, remove/undo items, use **Check videos only**, and move a video's one-second window without opening a full timeline editor.
-- **Simple output choices** — Export landscape 16:9, portrait 9:16, or square 1:1; choose whole-item Fit or centered Fill; when using Fit, choose black bars or a blurred background; and use standard or high-quality resolution presets.
-- **Optional looping music** — Choose one of two lightweight built-in original loops, or select your own audio file. The selected track repeats to the end of the montage; source-video audio is not used.
+- **Edit only what needs attention** — Reorder items, reverse the whole sequence, remove/undo items, use **Check videos only**, move a video's one-second window, and adjust each item's fill-frame crop position without opening a full timeline editor.
+- **Simple output choices** — Export landscape 16:9, portrait 9:16, or square 1:1; choose whole-item Fit or adjustable Fill; when using Fit, choose black bars or a blurred background; and use standard or high-quality resolution presets.
+- **Optional looping music** — Choose one of two lightweight built-in original loops, or select your own audio file. The selected track repeats to the end of the montage and fades out over the final two seconds by default (toggleable). Source-video audio is not used.
 - **Automatic year dividers** — Optionally insert a simple one-second `2024`, `2025`, … card for the first capture year and whenever the year changes in the current item order.
 - **Keep the last result while adjusting** — Changing items, order, clip positions, or output settings does not erase the finished MP4. **Recreate video** asks before replacing it.
 - **Fully local, single-HTML operation** — No account, upload API, CDN runtime, analytics, or telemetry. Japanese / English UI and desktop / phone layouts are included.
@@ -35,7 +35,7 @@ Just [open the demo](https://ttomohisa.github.io/htmlapps-one-second-montage/). 
 
 ### Use the downloaded HTML
 
-1. Download [`dist/index.html`](https://github.com/ttomohisa/htmlapps-one-second-montage/blob/main/dist/index.html) from this repository.
+1. Download [`one-second-montage.html`](https://github.com/ttomohisa/htmlapps-one-second-montage/blob/main/one-second-montage.html) from this repository. `dist/index.html` is generated during builds and is not committed.
 2. Open it directly in a current Chrome or Edge browser.
 
 The file is self-contained and does not require a local web server.
@@ -57,9 +57,9 @@ Repository validation (`scripts/check-repository.ps1`) additionally requires Nod
 2. Check the item count and finished duration. Each item contributes one second; enabled year dividers add one second each.
 3. Choose **Added**, **Date taken**, or **Filename**, or use **Reorder** for a custom sequence. **Reverse all items** reverses the current full order, including photos hidden by **Check videos only**, and switches to Manual.
 4. The app marks automatically selected highlights as **recommended 1 sec**. Select a video when you want to change its one-second window, and use **Play 1 second** to preview only the selected part.
-5. Remove unwanted items from their cards. **Undo** is available for 5 seconds after removal. It is disabled while importing or creating a video and becomes available again if that time has not expired when processing finishes or is cancelled.
-6. If needed, choose the video shape, item display mode, background style for Fit, and quality preset.
-7. Optionally choose a built-in BGM or your own music, adjust its volume, and enable one-second capture-year dividers.
+5. Remove unwanted items from their cards after confirming the deletion. **Undo** is available for 5 seconds after removal. It is disabled while importing or creating a video and becomes available again if that time has not expired when processing finishes or is cancelled.
+6. If needed, choose the video shape, item display mode, background style for Fit, and quality preset. When using **Fill frame**, open **Move** on an item card to drag its crop or use arrow keys. On phones, **Move** is at the lower left of the thumbnail.
+7. Optionally choose a built-in BGM or your own music, adjust its volume and the end fade-out (on by default), and enable one-second capture-year dividers.
 8. Select **Create video** and wait for the montage to render.
 9. Preview the result, edit the filename if needed, and select **Save MP4**.
 10. If you continue editing afterward, the existing MP4 remains available. Select **Recreate video** and confirm only when you want to replace it.
@@ -72,7 +72,7 @@ Repository validation (`scripts/check-repository.ps1`) additionally requires Nod
 | Portrait 9:16 | 720×1280 | 1080×1920 |
 | Square 1:1 | 720×720 | 1080×1080 |
 
-**Show whole item** keeps the full source visible. With Show whole item, you can choose **Black bars** or **Blurred background** for the unused area. **Fill frame** fills the output and crops overflow from the center. Source-video audio is not included. When BGM is enabled, only the selected background track is added and looped to the end of the montage.
+**Show whole item** keeps the full source visible. With Show whole item, you can choose **Black bars** or **Blurred background** for the unused area. **Fill frame** fills the output and initially crops from the center. You can drag each photo or video in **Move** to adjust the crop; positioning does not affect **Show whole item**. Source-video audio is not included. BGM uses one looped track, with an optional fade over the final two seconds.
 
 ### Ordering and dates
 
@@ -85,7 +85,7 @@ Repository validation (`scripts/check-repository.ps1`) additionally requires Nod
 
 - Use `Tab` / `Shift+Tab` to move through controls.
 - Press `Enter` / `Space` on a video card to open its one-second selector.
-- Use the arrow keys to adjust the one-second start position.
+- Use the arrow keys to adjust the one-second start position or fine-tune crop positioning in the **Move** dialog.
 - Press `Esc` to close dialogs.
 
 ## Publish with GitHub Pages
